@@ -11,7 +11,3 @@ admin.site.register(ManagementOrganizationalStructure)
 admin.site.register(ManufacturingAndProduction)
 admin.site.register(ProductCompetitiveness)
 admin.site.register(ResearchAndDevelopment)
-
-
-
-
