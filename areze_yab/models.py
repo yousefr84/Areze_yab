@@ -7,11 +7,14 @@ from django.db import models
 
 #
 class CustomUser(AbstractUser):
+    is_company = models.BooleanField(default=False)
     password = models.CharField(max_length=128)
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.CharField(max_length=150, blank=True, null=True)
-
+    company_name = models.CharField(max_length=100,blank=True,null=True)
+    registrationNumber = models.CharField(max_length=4,blank=True,null=True,unique=True)
+    username = models.CharField(max_length=11,blank=True,null=True,unique=True)
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='custom_user_groups',

@@ -19,7 +19,7 @@ class SalesAndMarketingSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ['id', 'name', 'registrationNumber', 'nationalID']
+        fields = "__all__"
 
 
 class HumanResourcesSerializer(serializers.ModelSerializer):
