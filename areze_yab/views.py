@@ -39,7 +39,9 @@ class CompanyAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SalesAndMarketingAPIView(APIView):
+class BaseAPIView(APIView):
+    serializer_class = None
+
     def put(self, request):
         nationalID = request.data['nationalID']
         if not nationalID:
@@ -56,9 +58,42 @@ class SalesAndMarketingAPIView(APIView):
         except Company.DoesNotExist:
             return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         request.data['company'] = company.id
-        serializer = SalesAndMarketingSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
 
+
+class SalesAndMarketingAPIView(BaseAPIView):
+    serializer_class = SalesAndMarketingSerializer
+
+
+class HumanResourceAPIView(BaseAPIView):
+    parser_classes = HumanResourcesSerializer
+
+
+class FinancialResourcesAPIView(BaseAPIView):
+    serializer_class = FinancialResourcesSerializer
+
+
+class CapitalStructureAPIView(BaseAPIView):
+    serializer_class = CapitalStructureSerializer
+
+
+class ManagementOrganizationalStructureAPIView(BaseAPIView):
+    serializer_class = ManagementOrganizationalStructureSerializer
+
+
+class CustomerRelationshipManagementAPIView(BaseAPIView):
+    serializer_class = CustomerRelationshipManagementSerializer
+
+
+class ManufacturingAndProductionAPIView(BaseAPIView):
+    serializer_class = ManufacturingAndProductionSerializer
+
+class ResearchAndDevelopmentAPIView(BaseAPIView):
+    serializer_class = ResearchAndDevelopmentSerializer
+
+class ProductCompetitivenessAPIView(BaseAPIView):
+    serializer_class = ProductCompetitivenessSerializer
