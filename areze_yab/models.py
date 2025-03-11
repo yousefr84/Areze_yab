@@ -9,8 +9,6 @@ from django.db import models
 class CustomUser(AbstractUser):
     is_company = models.BooleanField(default=False)
     password = models.CharField(max_length=128)
-    first_name = models.CharField(max_length=150, blank=True, null=True)
-    last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.CharField(max_length=150, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     registrationNumber = models.CharField(max_length=4, blank=True, null=True, unique=True)
@@ -44,41 +42,41 @@ class Company(models.Model):
 class SalesAndMarketing(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     # <------------Branding------------>
-    brandIdentity = models.IntegerField(blank=True, null=True)
-    visualIdentityActivities = models.IntegerField(blank=True, null=True)
-    brandReputationManagement = models.IntegerField(blank=True, null=True)
-    brandTrustAndEmotionalConnection = models.IntegerField(blank=True, null=True)
+    brandIdentity = models.IntegerField(default=0)
+    visualIdentityActivities = models.IntegerField(default=0)
+    brandReputationManagement = models.IntegerField(default=0)
+    brandTrustAndEmotionalConnection = models.IntegerField(default=0)
     # <------------MarketShare------------>
-    marketResearchOpportunities = models.IntegerField(blank=True, null=True)
-    salesToIndustryRatio = models.IntegerField(blank=True, null=True)
-    marketLeadershipPotential = models.IntegerField(blank=True, null=True)
+    marketResearchOpportunities = models.IntegerField(default=0)
+    salesToIndustryRatio = models.IntegerField(default=0)
+    marketLeadershipPotential = models.IntegerField(default=0)
     # <------------DistributionAndSalesChannels------------>
-    orderDeliveryTimeliness = models.IntegerField(blank=True, null=True)
-    salesNetworkCoverage = models.IntegerField(blank=True, null=True)
-    salesAgencySupervision = models.IntegerField(blank=True, null=True)
-    salesRepProductAwareness = models.IntegerField(blank=True, null=True)
-    reliableTransportUsage = models.IntegerField(blank=True, null=True)
+    orderDeliveryTimeliness = models.IntegerField(default=0)
+    salesNetworkCoverage = models.IntegerField(default=0)
+    salesAgencySupervision = models.IntegerField(default=0)
+    salesRepProductAwareness = models.IntegerField(default=0)
+    reliableTransportUsage = models.IntegerField(default=0)
 
     # <------------MarketingAndSalesStrategy------------>
-    digitalMarketingUsage = models.IntegerField(blank=True, null=True)
-    marketResearchForMarketing = models.IntegerField(blank=True, null=True)
-    marketingPlanningAndGuidelines = models.IntegerField(blank=True, null=True)
-    marketingAndSalesNetworking = models.IntegerField(blank=True, null=True)
-    innovativeMarketingUsage = models.IntegerField(blank=True, null=True)
-    exhibitionParticipation = models.IntegerField(blank=True, null=True)
+    digitalMarketingUsage = models.IntegerField(default=0)
+    marketResearchForMarketing = models.IntegerField(default=0)
+    marketingPlanningAndGuidelines = models.IntegerField(default=0)
+    marketingAndSalesNetworking = models.IntegerField(default=0)
+    innovativeMarketingUsage = models.IntegerField(default=0)
+    exhibitionParticipation = models.IntegerField(default=0)
 
     # <------------SalesHistory------------>
-    salesAmountToCostRatio = models.IntegerField(blank=True, null=True)
-    salesGrowthLast3Months = models.IntegerField(blank=True, null=True)
-    salesToProductionRatio = models.IntegerField(blank=True, null=True)
+    salesAmountToCostRatio = models.IntegerField(default=0)
+    salesGrowthLast3Months = models.IntegerField(default=0)
+    salesToProductionRatio = models.IntegerField(default=0)
 
     # <------------TargetMarketKnowledge------------>
-    targetMarketDefinition = models.IntegerField(blank=True, null=True)
-    marketRegulationsKnowledge = models.IntegerField(blank=True, null=True)
-    competitorAwareness = models.IntegerField(blank=True, null=True)
+    targetMarketDefinition = models.IntegerField(default=0)
+    marketRegulationsKnowledge = models.IntegerField(default=0)
+    competitorAwareness = models.IntegerField(default=0)
 
     # <------------ExportActivities------------>
-    exportActivitiesAndGlobalMarketUse = models.IntegerField(blank=True, null=True)
+    exportActivitiesAndGlobalMarketUse = models.IntegerField(default=0)
 
     date = models.DateField(auto_now=True)
 

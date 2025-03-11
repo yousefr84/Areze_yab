@@ -60,3 +60,5 @@ class CompanyInline(admin.TabularInline):
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'username', 'is_company')
     inlines = [CompanyInline]
+
+

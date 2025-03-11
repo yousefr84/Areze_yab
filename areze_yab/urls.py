@@ -6,7 +6,6 @@ from rest_framework_simplejwt.views import (
 from areze_yab.views import *
 
 urlpatterns = [
-    # path('diagnostic/', DiagnosticSurveyView.as_view(), name='diagnostic'),
     path('company/', CompanyAPIView.as_view()),
     path('sales_and_marketing/', SalesAndMarketingAPIView.as_view()),
     path('human_resources/', HumanResourceAPIView.as_view()),
