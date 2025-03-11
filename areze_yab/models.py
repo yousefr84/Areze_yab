@@ -12,9 +12,9 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.CharField(max_length=150, blank=True, null=True)
-    company_name = models.CharField(max_length=100,blank=True,null=True)
-    registrationNumber = models.CharField(max_length=4,blank=True,null=True,unique=True)
-    username = models.CharField(max_length=11,blank=True,null=True,unique=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    registrationNumber = models.CharField(max_length=4, blank=True, null=True, unique=True)
+    username = models.CharField(max_length=11, blank=True, null=True, unique=True)
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='custom_user_groups',
@@ -80,6 +80,8 @@ class SalesAndMarketing(models.Model):
     # <------------ExportActivities------------>
     exportActivitiesAndGlobalMarketUse = models.IntegerField(blank=True, null=True)
 
+    date = models.DateField(auto_now=True)
+
 
 # <------------Human Resources------------>
 class HumanResources(models.Model):
@@ -125,6 +127,8 @@ class HumanResources(models.Model):
     respect_for_employee_privacy = models.IntegerField(blank=True, null=True)
     managers_behavior_towards_men_and_women = models.IntegerField(blank=True, null=True)
 
+    date = models.DateField(auto_now=True)
+
 
 # <------------Financial Resources------------>
 class FinancialResources(models.Model):
@@ -163,6 +167,8 @@ class FinancialResources(models.Model):
     # <------------Sales Growth------------>
     sales_change_over_period = models.IntegerField(blank=True, null=True)
 
+    date = models.DateField(auto_now=True)
+
 
 # <------------Capital Structure------------>
 class CapitalStructure(models.Model):
@@ -174,6 +180,8 @@ class CapitalStructure(models.Model):
 
     # <------------Risk Tolerance------------>
     startup_investment_risk_tolerance = models.IntegerField(blank=True, null=True)
+
+    date = models.DateField(auto_now=True)
 
 
 # <------------Management & Organizational Structure------------>
@@ -200,6 +208,8 @@ class ManagementOrganizationalStructure(models.Model):
     # <------------Delegation of Authority------------>
     decision_making_power_for_lower_employees = models.IntegerField(blank=True, null=True)
 
+    date = models.DateField(auto_now=True)
+
 
 # <------------Customer Relationship Management------------>
 class CustomerRelationshipManagement(models.Model):
@@ -218,6 +228,8 @@ class CustomerRelationshipManagement(models.Model):
     # <------------Customer Retention------------>
     employee_training_for_customer_interaction = models.IntegerField(blank=True, null=True)
     loyal_customer_count = models.IntegerField(blank=True, null=True)
+
+    date = models.DateField(auto_now=True)
 
 
 class ManufacturingAndProduction(models.Model):
@@ -257,6 +269,8 @@ class ManufacturingAndProduction(models.Model):
     quality_control_lab = models.IntegerField(blank=True, null=True)
     z = models.IntegerField(blank=True, null=True)
 
+    date = models.DateField(auto_now=True)
+
 
 # <------------Research & Development------------>
 class ResearchAndDevelopment(models.Model):
@@ -272,9 +286,11 @@ class ResearchAndDevelopment(models.Model):
     innovation_process_guidelines = models.IntegerField(blank=True, null=True)
     customer_competitor_inspiration = models.IntegerField(blank=True, null=True)
     innovation_culture = models.IntegerField(blank=True, null=True)
+    date = models.DateField(auto_now=True)
 
 
 # <------------Product Competitiveness------------>
 class ProductCompetitiveness(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     unique_feature = models.IntegerField(blank=True, null=True)
+    date = models.DateField(auto_now=True)

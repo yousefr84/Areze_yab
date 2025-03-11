@@ -1,39 +1,62 @@
 from django.contrib import admin
 from .models import *
 
+
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'name', 'nationalID')
+
+
 @admin.register(SalesAndMarketing)
 class SalesAndMarketingAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
+
 @admin.register(HumanResources)
 class HumanResourcesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
 
 @admin.register(FinancialResources)
 class FinancialResourcesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
 
 @admin.register(CapitalStructure)
 class CapitalStructureAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
+
 @admin.register(CustomerRelationshipManagement)
 class CustomerRelationshipManagementAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
+
 @admin.register(ManagementOrganizationalStructure)
 class ManagementOrganizationalStructureAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
+
 @admin.register(ManufacturingAndProduction)
 class ManufacturingAndProductionAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company','date')
+
+
 @admin.register(ProductCompetitiveness)
 class ProductCompetitivenessAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company', 'date')
+
+
 @admin.register(ResearchAndDevelopment)
 class ResearchAndDevelopmentAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('company', 'date')
+
+
+class CompanyInline(admin.TabularInline):
+    model = Company.user.through  # برای مدیریت رابطه چند‌به‌چند
+    extra = 1
 
 @admin.register(CustomUser)
-class ModelNameAdmin(admin.ModelAdmin):
-    pass
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'username', 'is_company')
+    inlines = [CompanyInline]

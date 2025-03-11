@@ -14,6 +14,11 @@ class RegisterAPIView(APIView):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            if serializer.data['is_company']:
+                company = Company.objects.create(name=serializer.data['name'],
+                                                 registrationNumber=serializer.data['registrationNumber'],
+                                                 nationalID=serializer.data['username'])
+                company.user.add(CustomUser.objects.get(id=serializer.data['id']))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -26,19 +31,34 @@ class CompanyAPIView(APIView):
             return Response(data={"error": "Company is required"}, status=status.HTTP_400_BAD_REQUEST)
         user = CustomUser.objects.get(id=userid)
         if not user.is_company:
-
-            print(f"user {userid} is {user}")
             company = Company.objects.create(name=company_data['name'],
-                                                registrationNumber=company_data['registrationNumber'],
-                                                nationalID=company_data['nationalID'])
-            print(f"company created {company}")
+                                             registrationNumber=company_data['registrationNumber'],
+                                             nationalID=company_data['nationalID'])
             company.user.add(user)
-            print(f"user set to {company}")
             serializer = CompanySerializer(company)
-            print(f"serializer created {serializer}")
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SalesAndMarketingAPIView(APIView):
-    def post(self, request):
-        pass
+    def put(self, request):
+        nationalID = request.data['nationalID']
+        if not nationalID:
+            return Response(data={"error": "nationalID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        user_id = request.data['userid']
+        if not user_id:
+            return Response(data={"error": "userid is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response(data={"error": "userid does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            company = Company.objects.get(user=user, nationalID=nationalID)
+        except Company.DoesNotExist:
+            return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        request.data['company'] = company.id
+        serializer = SalesAndMarketingSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
