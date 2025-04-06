@@ -77,6 +77,7 @@ class SalesAndMarketing(models.Model):
 
     # <------------ExportActivities------------>
     exportActivitiesAndGlobalMarketUse = models.IntegerField(default=0)
+    is_draft = models.BooleanField(default= True)
 
     date = models.DateField(auto_now=True)
 
@@ -125,6 +126,7 @@ class HumanResources(models.Model):
     respect_for_employee_privacy = models.IntegerField(blank=True, null=True)
     managers_behavior_towards_men_and_women = models.IntegerField(blank=True, null=True)
 
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)
 
 
@@ -165,6 +167,7 @@ class FinancialResources(models.Model):
     # <------------Sales Growth------------>
     sales_change_over_period = models.IntegerField(blank=True, null=True)
 
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)
 
 
@@ -179,6 +182,7 @@ class CapitalStructure(models.Model):
     # <------------Risk Tolerance------------>
     startup_investment_risk_tolerance = models.IntegerField(blank=True, null=True)
 
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)
 
 
@@ -206,6 +210,7 @@ class ManagementOrganizationalStructure(models.Model):
     # <------------Delegation of Authority------------>
     decision_making_power_for_lower_employees = models.IntegerField(blank=True, null=True)
 
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)
 
 
@@ -227,6 +232,7 @@ class CustomerRelationshipManagement(models.Model):
     employee_training_for_customer_interaction = models.IntegerField(blank=True, null=True)
     loyal_customer_count = models.IntegerField(blank=True, null=True)
 
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)
 
 
@@ -268,6 +274,7 @@ class ManufacturingAndProduction(models.Model):
     z = models.IntegerField(blank=True, null=True)
 
     date = models.DateField(auto_now=True)
+    is_draft = models.BooleanField(default= True)
 
 
 # <------------Research & Development------------>
@@ -291,4 +298,5 @@ class ResearchAndDevelopment(models.Model):
 class ProductCompetitiveness(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     unique_feature = models.IntegerField(blank=True, null=True)
+    is_draft = models.BooleanField(default= True)
     date = models.DateField(auto_now=True)

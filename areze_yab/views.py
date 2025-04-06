@@ -61,12 +61,16 @@ class BaseAPIView(APIView):
     serializer_class = None
     subdomains = None
     domain = None
+    finall =None
+    model_class = None
 
     def put(self, request):
+        data = request.data
         nationalID = request.data['nationalID']
         if not nationalID:
             return Response(data={"error": "nationalID is required"}, status=status.HTTP_400_BAD_REQUEST)
         user_id = request.data['userid']
+        answer = request.data['answer']
 
         if not user_id:
             return Response(data={"error": "userid is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -79,7 +83,10 @@ class BaseAPIView(APIView):
         except Company.DoesNotExist:
             return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         request.data['company'] = company.id
-        serializer = self.serializer_class(data=request.data)
+        if answer:
+            if answer == self.finall:
+                data[is_draft]=False
+                serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
@@ -107,7 +114,7 @@ class BaseAPIView(APIView):
 
         results = {}
         subdomains = self.subdomains
-        answers = SalesAndMarketing.objects.filter(company=company).last()
+        answers = self.model_class.objects.filter(company=company).last()
 
         for subdomain, fields in subdomains.items():
             values = [getattr(answers, field, None) for field in fields if
@@ -131,6 +138,7 @@ class BaseAPIView(APIView):
 
 class SalesAndMarketingAPIView(BaseAPIView):
     serializer_class = SalesAndMarketingSerializer
+    model_class = SalesAndMarketing
     subdomains = {
         "برندینگ": ["brandIdentity", "visualIdentityActivities", "brandReputationManagement",
                     "brandTrustAndEmotionalConnection"],
@@ -151,6 +159,7 @@ class SalesAndMarketingAPIView(BaseAPIView):
 
 class HumanResourceAPIView(BaseAPIView):
     parser_classes = HumanResourcesSerializer
+    model_class= HumanResources
     domain = "منابع انسانی"
     subdomains = {
         "تعداد نیرو": ["daily_operations_with_current_workforce", "backlog_of_daily_tasks",
@@ -176,6 +185,7 @@ class HumanResourceAPIView(BaseAPIView):
 
 class FinancialResourcesAPIView(BaseAPIView):
     serializer_class = FinancialResourcesSerializer
+    model_class = FinancialResources
     domain = "منابع مالی"
     subdomains = {
         "جریان نقد عملیاتی": ["ability_to_maintain_positive_cash_flow"],
@@ -195,6 +205,7 @@ class FinancialResourcesAPIView(BaseAPIView):
 
 class CapitalStructureAPIView(BaseAPIView):
     serializer_class = CapitalStructureSerializer
+    model_class = CapitalStructure
     domain = "ساختار سرمایه"
     subdomains = {
         "نحوه تامین سرمایه": ["shareholder_funding_power", "availability_of_resources_for_new_projects"],
@@ -204,6 +215,7 @@ class CapitalStructureAPIView(BaseAPIView):
 
 class ManagementOrganizationalStructureAPIView(BaseAPIView):
     serializer_class = ManagementOrganizationalStructureSerializer
+    model_class= ManagementOrganizationalStructure
     domain = 'ساختار مدیریتی و سازمانی'
     subdomains = {
         "چارت سازمانی": ["comprehensive_organizational_chart", "regular_chart_updates"],
@@ -219,6 +231,7 @@ class ManagementOrganizationalStructureAPIView(BaseAPIView):
 
 class CustomerRelationshipManagementAPIView(BaseAPIView):
     serializer_class = CustomerRelationshipManagementSerializer
+    model_class = CustomerRelationshipManagement
     domain = 'مدیریت ارتباط با مشتری'
     subdomains = {
         "سیستم بازخورد": ["purchase_info_documentation", "customer_feedback_system",
@@ -231,6 +244,7 @@ class CustomerRelationshipManagementAPIView(BaseAPIView):
 
 class ManufacturingAndProductionAPIView(BaseAPIView):
     serializer_class = ManufacturingAndProductionSerializer
+    model_class = ManagementOrganizationalStructure
     domain = 'ساخت و تولید'
     subdomains = {
         "میزان تولید ماهیانه": ["production_increase_planning", "safety_stock_level", "storage_cost",
@@ -248,6 +262,7 @@ class ManufacturingAndProductionAPIView(BaseAPIView):
 
 class ResearchAndDevelopmentAPIView(BaseAPIView):
     serializer_class = ResearchAndDevelopmentSerializer
+    model_class = ResearchAndDevelopment
     subdomains = {
         "بهبود محصول": ["r_and_d_unit_defined_roles", "r_and_d_production_connection", "r_and_d_budget"],
         "نوآوری": ["innovation_planning", "innovation_process_guidelines",
@@ -257,5 +272,6 @@ class ResearchAndDevelopmentAPIView(BaseAPIView):
 
 class ProductCompetitivenessAPIView(BaseAPIView):
     serializer_class = ProductCompetitivenessSerializer
+    model_class = ProductCompetitiveness
     domain = 'رفابت پذیری محصول'
     subdomains = { "مزیت رفابتی": ["unique_feature"]}
