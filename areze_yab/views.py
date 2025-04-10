@@ -61,7 +61,7 @@ class BaseAPIView(APIView):
     serializer_class = None
     subdomains = None
     domain = None
-    finall =None
+    finall = None
     model_class = None
 
     def put(self, request):
@@ -85,7 +85,7 @@ class BaseAPIView(APIView):
         request.data['company'] = company.id
         if answer:
             if answer == self.finall:
-                data['is_draft']=False
+                data['is_draft'] = False
                 serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -117,15 +117,20 @@ class BaseAPIView(APIView):
         answers = self.model_class.objects.filter(company=company).last()
 
         for subdomain, fields in subdomains.items():
-            values = [getattr(answers, field, None) for field in fields if
-                      getattr(answers, field, None) is not None and isinstance(getattr(answers, field, None),
-                                                                               (int, float))]
+            values = []
+            for field in fields:
+                val = getattr(answers, field, None)
+                if val is not None and hasattr(val, 'number') and val.number is not None:
+                    values.append(val.number)
 
             results[subdomain] = sum(values) / len(values) if values else 0
+
         all_fields = [field for fields_list in subdomains.values() for field in fields_list]
-        all_scores = [getattr(answers, field, None) for field in all_fields
-                      if getattr(answers, field, None) is not None
-                      and isinstance(getattr(answers, field, None), (int, float))]
+        all_scores = []
+        for field in all_fields:
+            val = getattr(answers, field, None)
+            if val is not None and hasattr(val, 'number') and val.number is not None:
+                all_scores.append(val.number)
 
         results["Overall Score"] = sum(all_scores) / len(all_scores) if all_scores else 0
 
@@ -160,7 +165,7 @@ class SalesAndMarketingAPIView(BaseAPIView):
 
 class HumanResourceAPIView(BaseAPIView):
     parser_classes = HumanResourcesSerializer
-    model_class= HumanResources
+    model_class = HumanResources
     domain = "منابع انسانی"
     subdomains = {
         "تعداد نیرو": ["daily_operations_with_current_workforce", "backlog_of_daily_tasks",
@@ -184,6 +189,7 @@ class HumanResourceAPIView(BaseAPIView):
     }
     finall = "managers_behavior_towards_men_and_women"
 
+
 class FinancialResourcesAPIView(BaseAPIView):
     serializer_class = FinancialResourcesSerializer
     model_class = FinancialResources
@@ -204,6 +210,7 @@ class FinancialResourcesAPIView(BaseAPIView):
     }
     finall = 'sales_change_over_period'
 
+
 class CapitalStructureAPIView(BaseAPIView):
     serializer_class = CapitalStructureSerializer
     model_class = CapitalStructure
@@ -214,9 +221,10 @@ class CapitalStructureAPIView(BaseAPIView):
     }
     finall = 'startup_investment_risk_tolerance'
 
+
 class ManagementOrganizationalStructureAPIView(BaseAPIView):
     serializer_class = ManagementOrganizationalStructureSerializer
-    model_class= ManagementOrganizationalStructure
+    model_class = ManagementOrganizationalStructure
     domain = 'ساختار مدیریتی و سازمانی'
     subdomains = {
         "چارت سازمانی": ["comprehensive_organizational_chart", "regular_chart_updates"],
@@ -270,21 +278,28 @@ class ResearchAndDevelopmentAPIView(BaseAPIView):
     subdomains = {
         "بهبود محصول": ["r_and_d_unit_defined_roles", "r_and_d_production_connection", "r_and_d_budget"],
         "نوآوری": ["innovation_planning", "innovation_process_guidelines",
-                       "customer_competitor_inspiration", "innovation_culture"]
+                   "customer_competitor_inspiration", "innovation_culture"]
     }
     domain = 'تحقیق و توسعه'
     finall = 'innovation_culture'
+
 
 class ProductCompetitivenessAPIView(BaseAPIView):
     serializer_class = ProductCompetitivenessSerializer
     model_class = ProductCompetitiveness
     domain = 'رفابت پذیری محصول'
-    subdomains = { "مزیت رفابتی": ["unique_feature"]}
+    subdomains = {"مزیت رفابتی": ["unique_feature"]}
     finall = 'unique_feature'
-    
-    
+
+class BrandingAPIView(BaseAPIView):
+    serializer_class = BrandingSerializer
+    model_class = Branding
+    domain = 'برندینگ'
+    subdomains = {}
+    finall = "is_visual_design_of_brand_consistent"
+
 
 
 class DashboardViewSet(ViewSet):
-    def DraftsList(self,request):
+    def DraftsList(self, request):
         pass
