@@ -5,7 +5,7 @@ from django.db import models
 # Create your models here.
 
 
-#
+
 class CustomUser(AbstractUser):
     is_company = models.BooleanField(default=False)
     password = models.CharField(max_length=128)
@@ -38,9 +38,12 @@ class Company(models.Model):
     registrationNumber = models.CharField(max_length=100)
     nationalID = models.CharField(max_length=100)
 
-
-class SalesAndMarketing(models.Model):
+class BaseDomain(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    is_draft = models.BooleanField(default= True)
+    date = models.DateField(auto_now=True)
+
+class SalesAndMarketing(BaseDomain):
     # <------------Branding------------>
     brandIdentity = models.IntegerField(default=0)
     visualIdentityActivities = models.IntegerField(default=0)
@@ -77,14 +80,11 @@ class SalesAndMarketing(models.Model):
 
     # <------------ExportActivities------------>
     exportActivitiesAndGlobalMarketUse = models.IntegerField(default=0)
-    is_draft = models.BooleanField(default= True)
 
-    date = models.DateField(auto_now=True)
 
 
 # <------------Human Resources------------>
-class HumanResources(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class HumanResources(BaseDomain):
 
     # <------------Workforce Numbers------------>
     daily_operations_with_current_workforce = models.IntegerField(blank=True, null=True)
@@ -126,13 +126,10 @@ class HumanResources(models.Model):
     respect_for_employee_privacy = models.IntegerField(blank=True, null=True)
     managers_behavior_towards_men_and_women = models.IntegerField(blank=True, null=True)
 
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)
 
 
 # <------------Financial Resources------------>
-class FinancialResources(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class FinancialResources(BaseDomain):
 
     # <------------Operating Cash Flow------------>
     ability_to_maintain_positive_cash_flow = models.IntegerField(blank=True, null=True)
@@ -167,13 +164,10 @@ class FinancialResources(models.Model):
     # <------------Sales Growth------------>
     sales_change_over_period = models.IntegerField(blank=True, null=True)
 
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)
 
 
 # <------------Capital Structure------------>
-class CapitalStructure(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class CapitalStructure(BaseDomain):
 
     # <------------Funding Sources------------>
     shareholder_funding_power = models.IntegerField(blank=True, null=True)
@@ -182,13 +176,10 @@ class CapitalStructure(models.Model):
     # <------------Risk Tolerance------------>
     startup_investment_risk_tolerance = models.IntegerField(blank=True, null=True)
 
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)
 
 
 # <------------Management & Organizational Structure------------>
-class ManagementOrganizationalStructure(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class ManagementOrganizationalStructure(BaseDomain):
 
     # <------------Organizational Chart------------>
     comprehensive_organizational_chart = models.IntegerField(blank=True, null=True)
@@ -210,13 +201,10 @@ class ManagementOrganizationalStructure(models.Model):
     # <------------Delegation of Authority------------>
     decision_making_power_for_lower_employees = models.IntegerField(blank=True, null=True)
 
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)
 
 
 # <------------Customer Relationship Management------------>
-class CustomerRelationshipManagement(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class CustomerRelationshipManagement(BaseDomain):
 
     # <------------Feedback System------------>
     purchase_info_documentation = models.IntegerField(blank=True, null=True)
@@ -232,12 +220,9 @@ class CustomerRelationshipManagement(models.Model):
     employee_training_for_customer_interaction = models.IntegerField(blank=True, null=True)
     loyal_customer_count = models.IntegerField(blank=True, null=True)
 
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)
 
 
-class ManufacturingAndProduction(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class ManufacturingAndProduction(BaseDomain):
 
     # <------------Monthly Production------------>
     production_increase_planning = models.IntegerField(blank=True, null=True)
@@ -273,13 +258,10 @@ class ManufacturingAndProduction(models.Model):
     quality_control_lab = models.IntegerField(blank=True, null=True)
     z = models.IntegerField(blank=True, null=True)
 
-    date = models.DateField(auto_now=True)
-    is_draft = models.BooleanField(default= True)
 
 
 # <------------Research & Development------------>
-class ResearchAndDevelopment(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class ResearchAndDevelopment(BaseDomain):
 
     # <------------Product Improvement------------>
     r_and_d_unit_defined_roles = models.IntegerField(blank=True, null=True)
@@ -291,12 +273,8 @@ class ResearchAndDevelopment(models.Model):
     innovation_process_guidelines = models.IntegerField(blank=True, null=True)
     customer_competitor_inspiration = models.IntegerField(blank=True, null=True)
     innovation_culture = models.IntegerField(blank=True, null=True)
-    date = models.DateField(auto_now=True)
 
 
 # <------------Product Competitiveness------------>
-class ProductCompetitiveness(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+class ProductCompetitiveness(BaseDomain):
     unique_feature = models.IntegerField(blank=True, null=True)
-    is_draft = models.BooleanField(default= True)
-    date = models.DateField(auto_now=True)

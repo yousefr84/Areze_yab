@@ -1,5 +1,5 @@
 from django.utils.translation import gettext as _
-
+from rest_framework.viewsets import ViewSet
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from rest_framework import status
@@ -85,7 +85,7 @@ class BaseAPIView(APIView):
         request.data['company'] = company.id
         if answer:
             if answer == self.finall:
-                data[is_draft]=False
+                data['is_draft']=False
                 serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -155,6 +155,7 @@ class SalesAndMarketingAPIView(BaseAPIView):
         "فعالیت های صادراتی": ["exportActivitiesAndGlobalMarketUse"]
     }
     domain = "فروش و مارکتینگ"
+    finall = 'exportActivitiesAndGlobalMarketUse'
 
 
 class HumanResourceAPIView(BaseAPIView):
@@ -181,7 +182,7 @@ class HumanResourceAPIView(BaseAPIView):
                                "manager_employee_interaction"],
         "توجه به ارزش های اخلاقی": ["respect_for_employee_privacy", "managers_behavior_towards_men_and_women"]
     }
-
+    finall = "managers_behavior_towards_men_and_women"
 
 class FinancialResourcesAPIView(BaseAPIView):
     serializer_class = FinancialResourcesSerializer
@@ -201,7 +202,7 @@ class FinancialResourcesAPIView(BaseAPIView):
         "رشد فروش": ["sales_change_over_period"]
 
     }
-
+    finall = 'sales_change_over_period'
 
 class CapitalStructureAPIView(BaseAPIView):
     serializer_class = CapitalStructureSerializer
@@ -211,7 +212,7 @@ class CapitalStructureAPIView(BaseAPIView):
         "نحوه تامین سرمایه": ["shareholder_funding_power", "availability_of_resources_for_new_projects"],
         "ریسک پذیری": ["startup_investment_risk_tolerance"]
     }
-
+    finall = 'startup_investment_risk_tolerance'
 
 class ManagementOrganizationalStructureAPIView(BaseAPIView):
     serializer_class = ManagementOrganizationalStructureSerializer
@@ -227,6 +228,7 @@ class ManagementOrganizationalStructureAPIView(BaseAPIView):
                                      "activities_for_increasing_customer_awareness"],
         "میزان تفویض اختیار": ["decision_making_power_for_lower_employees"]
     }
+    finall = 'decision_making_power_for_lower_employees'
 
 
 class CustomerRelationshipManagementAPIView(BaseAPIView):
@@ -240,6 +242,7 @@ class CustomerRelationshipManagementAPIView(BaseAPIView):
                     "first_purchase_support_plan"],
         "ماندگاری مشتری": ["employee_training_for_customer_interaction", "loyal_customer_count"]
     }
+    finall = 'loyal_customer_count'
 
 
 class ManufacturingAndProductionAPIView(BaseAPIView):
@@ -258,6 +261,7 @@ class ManufacturingAndProductionAPIView(BaseAPIView):
         "گارانتی": ["warranty_after_sales", "warranty_commitment"],
         "سیستم کنترل کیفیت": ["quality_control_lab", "quality_control_standards"]
     }
+    finall = 'quality_control_standards'
 
 
 class ResearchAndDevelopmentAPIView(BaseAPIView):
@@ -269,9 +273,18 @@ class ResearchAndDevelopmentAPIView(BaseAPIView):
                        "customer_competitor_inspiration", "innovation_culture"]
     }
     domain = 'تحقیق و توسعه'
+    finall = 'innovation_culture'
 
 class ProductCompetitivenessAPIView(BaseAPIView):
     serializer_class = ProductCompetitivenessSerializer
     model_class = ProductCompetitiveness
     domain = 'رفابت پذیری محصول'
     subdomains = { "مزیت رفابتی": ["unique_feature"]}
+    finall = 'unique_feature'
+    
+    
+
+
+class DashboardViewSet(ViewSet):
+    def DraftsList(self,request):
+        pass
