@@ -1,9 +1,59 @@
+import re
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 # Create your models here.
 
+
+class CharIntegerField(models.Field):
+    description = "A custom field that stores both string and integer values separately"
+
+    def __init__(self, *args, **kwargs):
+        self.max_length = kwargs.get('max_length', 255)
+        super().__init__(*args, **kwargs)
+
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        return self._parse_value(value)
+
+    def to_python(self, value):
+        if isinstance(value, CharInteger):
+            return value
+        if value is None:
+            return value
+        return self._parse_value(value)
+
+    def get_prep_value(self, value):
+        if isinstance(value, CharInteger):
+            return value.raw
+        return str(value)
+
+    def _parse_value(self, raw_value):
+        return CharInteger(raw_value)
+
+
+class CharInteger:
+    def __init__(self, raw_value):
+        self.raw = raw_value
+        self.number = None
+        self.text = None
+        self._parse_value()
+
+    def _parse_value(self):
+        match = re.match(r'(\d+)([a-zA-Z]*)', self.raw)
+        if match:
+            self.number = int(match.group(1))
+            self.text = match.group(2)
+        else:
+            self.number = None
+            self.text = self.raw
+
+    def __str__(self):
+        return self.raw
+
+    def __repr__(self):
+        return f"<CharInteger number={self.number}, text='{self.text}'>"
 
 
 class CustomUser(AbstractUser):
@@ -38,10 +88,12 @@ class Company(models.Model):
     registrationNumber = models.CharField(max_length=100)
     nationalID = models.CharField(max_length=100)
 
+
 class BaseDomain(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    is_draft = models.BooleanField(default= True)
+    is_draft = models.BooleanField(default=True)
     date = models.DateField(auto_now=True)
+
 
 class SalesAndMarketing(BaseDomain):
     # <------------Branding------------>
@@ -82,10 +134,8 @@ class SalesAndMarketing(BaseDomain):
     exportActivitiesAndGlobalMarketUse = models.IntegerField(default=0)
 
 
-
 # <------------Human Resources------------>
 class HumanResources(BaseDomain):
-
     # <------------Workforce Numbers------------>
     daily_operations_with_current_workforce = models.IntegerField(blank=True, null=True)
     backlog_of_daily_tasks = models.IntegerField(blank=True, null=True)
@@ -127,10 +177,8 @@ class HumanResources(BaseDomain):
     managers_behavior_towards_men_and_women = models.IntegerField(blank=True, null=True)
 
 
-
 # <------------Financial Resources------------>
 class FinancialResources(BaseDomain):
-
     # <------------Operating Cash Flow------------>
     ability_to_maintain_positive_cash_flow = models.IntegerField(blank=True, null=True)
 
@@ -165,10 +213,8 @@ class FinancialResources(BaseDomain):
     sales_change_over_period = models.IntegerField(blank=True, null=True)
 
 
-
 # <------------Capital Structure------------>
 class CapitalStructure(BaseDomain):
-
     # <------------Funding Sources------------>
     shareholder_funding_power = models.IntegerField(blank=True, null=True)
     availability_of_resources_for_new_projects = models.IntegerField(blank=True, null=True)
@@ -177,10 +223,8 @@ class CapitalStructure(BaseDomain):
     startup_investment_risk_tolerance = models.IntegerField(blank=True, null=True)
 
 
-
 # <------------Management & Organizational Structure------------>
 class ManagementOrganizationalStructure(BaseDomain):
-
     # <------------Organizational Chart------------>
     comprehensive_organizational_chart = models.IntegerField(blank=True, null=True)
     regular_chart_updates = models.IntegerField(blank=True, null=True)
@@ -202,10 +246,8 @@ class ManagementOrganizationalStructure(BaseDomain):
     decision_making_power_for_lower_employees = models.IntegerField(blank=True, null=True)
 
 
-
 # <------------Customer Relationship Management------------>
 class CustomerRelationshipManagement(BaseDomain):
-
     # <------------Feedback System------------>
     purchase_info_documentation = models.IntegerField(blank=True, null=True)
     customer_feedback_system = models.IntegerField(blank=True, null=True)
@@ -221,9 +263,7 @@ class CustomerRelationshipManagement(BaseDomain):
     loyal_customer_count = models.IntegerField(blank=True, null=True)
 
 
-
 class ManufacturingAndProduction(BaseDomain):
-
     # <------------Monthly Production------------>
     production_increase_planning = models.IntegerField(blank=True, null=True)
     safety_stock_level = models.IntegerField(blank=True, null=True)
@@ -259,10 +299,8 @@ class ManufacturingAndProduction(BaseDomain):
     z = models.IntegerField(blank=True, null=True)
 
 
-
 # <------------Research & Development------------>
 class ResearchAndDevelopment(BaseDomain):
-
     # <------------Product Improvement------------>
     r_and_d_unit_defined_roles = models.IntegerField(blank=True, null=True)
     r_and_d_production_connection = models.IntegerField(blank=True, null=True)
@@ -278,3 +316,23 @@ class ResearchAndDevelopment(BaseDomain):
 # <------------Product Competitiveness------------>
 class ProductCompetitiveness(BaseDomain):
     unique_feature = models.IntegerField(blank=True, null=True)
+
+
+# <------------Branding------------>
+class Branding(BaseDomain):
+    has_documented_brand_identity = CharIntegerField(max_length=100,blank=True)
+    has_defined_brand_personality = CharIntegerField(max_length=100,blank=True)
+    tracks_and_manages_brand_reputation = CharIntegerField(max_length=100,blank=True)
+    establishes_emotional_connection_with_customers = CharIntegerField(max_length=100,blank=True)
+    has_brand_slogan = CharIntegerField(max_length=100,blank=True)
+    has_customer_feedback_system = CharIntegerField(max_length=100,blank=True)
+    is_brand_active_on_social_media = CharIntegerField(max_length=100,blank=True)
+    employees_are_familiar_with_brand_values_and_mission = CharIntegerField(max_length=100,blank=True)
+    is_brand_visual_design_consistent = CharIntegerField(max_length=100,blank=True)
+    is_visual_design_of_brand_consistent = CharIntegerField(max_length=100,blank=True)
+
+
+
+
+
+
