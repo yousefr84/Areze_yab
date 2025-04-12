@@ -1,12 +1,14 @@
-from django.utils.translation import gettext as _
-from rest_framework.viewsets import ViewSet
-from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.viewsets import ViewSet
+from django.apps import apps
 from areze_yab.serializers import *
+import openai
+
+openai.api_key = "توکن_API_تو"
 
 
 class RegisterAPIView(APIView):
@@ -63,6 +65,7 @@ class BaseAPIView(APIView):
     domain = None
     finall = None
     model_class = None
+    questions = None
 
     def put(self, request):
         data = request.data
@@ -113,31 +116,76 @@ class BaseAPIView(APIView):
             return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         results = {}
-        subdomains = self.subdomains
         answers = self.model_class.objects.filter(company=company).last()
-
-        for subdomain, fields in subdomains.items():
-            values = []
-            for field in fields:
-                val = getattr(answers, field, None)
-                if val is not None and hasattr(val, 'number') and val.number is not None:
-                    values.append(val.number)
-
-            results[subdomain] = sum(values) / len(values) if values else 0
-
-        all_fields = [field for fields_list in subdomains.values() for field in fields_list]
-        all_scores = []
-        for field in all_fields:
+        fields = self.subdomains  # آرایه‌ای از اسم فیلدها، مثلاً ['innovation', 'strategy', 'culture']
+        text = []
+        for field in fields:
             val = getattr(answers, field, None)
-            if val is not None and hasattr(val, 'number') and val.number is not None:
-                all_scores.append(val.number)
+            if val is not None and hasattr(val, 'text') and val.text is not None:
+                text.append(val.text)
 
-        results["Overall Score"] = sum(all_scores) / len(all_scores) if all_scores else 0
+        prompt = f"""
+        I want a branding analysis report based on the following questionnaire responses.
 
+        The report must include:
+        1. A general analysis of the company’s current branding status considering its size
+        2. Strengths and weaknesses of current branding based on the answers and up-to-date research in the field
+        3. Five specific and practical suggestions to improve the branding strategy according to the responses
+
+        Go directly into the analysis. Do not include any introductions.
+
+        Company size: Small, with 10 employees
+
+        questions = {self.questions}
+        
+        answers = {text}
+        Please write the report in Persian, using a professional tone and clear structure.
+        """
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional branding consultant. Your task is to analyze questionnaire responses and generate strategic branding reports. Always respond in Persian with a professional tone and clear structure. Do not include any introductions or general explanations — go straight into the analysis."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        response = response['choices'][0]['message']['content']
+        scores = []
+        for field in fields:
+            val = getattr(answers, field, None)
+        if val is not None and hasattr(val, 'number') and val.number is not None:
+            scores.append(val.number)
+
+        # for subdomain, fields in subdomains.items():
+        #     values = []
+        #     for field in fields:
+        #         val = getattr(answers, field, None)
+        #         if val is not None and hasattr(val, 'number') and val.number is not None:
+        #             values.append(val.number)
+        #
+        #     results[subdomain] = sum(values) / len(values) if values else 0
+        #
+        # all_fields = [field for fields_list in subdomains.values() for field in fields_list]
+        # all_scores = []
+        # for field in all_fields:
+        #     val = getattr(answers, field, None)
+        #     if val is not None and hasattr(val, 'number') and val.number is not None:
+        #         all_scores.append(val.number)
+
+        # results["Overall Score"] = sum(all_scores) / len(all_scores) if all_scores else 0
+
+        overall_score = sum(scores) / len(scores) if scores else 0
         return Response({
             "company": company_serializer.data,
             "domain": self.domain,
-            "results": results
+            "overallScore": overall_score,
+            "response": response,
         }, status=status.HTTP_200_OK)
 
 
@@ -291,6 +339,7 @@ class ProductCompetitivenessAPIView(BaseAPIView):
     subdomains = {"مزیت رفابتی": ["unique_feature"]}
     finall = 'unique_feature'
 
+
 class BrandingAPIView(BaseAPIView):
     serializer_class = BrandingSerializer
     model_class = Branding
@@ -299,7 +348,36 @@ class BrandingAPIView(BaseAPIView):
     finall = "is_visual_design_of_brand_consistent"
 
 
+class HistoryViewSet(ViewSet):
+    objects = []
 
-class DashboardViewSet(ViewSet):
-    def DraftsList(self, request):
-        pass
+    def All(self, request):
+        registrationNumber = request.data['registrationNumber']
+        if not registrationNumber:
+            return Response(data={"user_id doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        for company in companies:
+            self.objects.append(SalesAndMarketing.objects.filter(company=company))
+            self.objects.append(Branding.objects.filter(company=company))
+            self.objects.append(ProductCompetitiveness.objects.filter(company=company))
+            self.objects.append(ResearchAndDevelopment.objects.filter(company=company))
+            self.objects.append(ManufacturingAndProduction.objects.filter(company=company))
+        return Response(data=self.objects,status=status.HTTP_200_OK)
+    def Companyies(self, request):
+        registrationNumber = request.data['registrationNumber']
+        if not registrationNumber:
+            return Response(data={"registrationNumber doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        serializer = CompanySerializer(companies, many=True)
+        return Response(data=serializer.data,status=status.HTTP_200_OK)
+    def DomainFilter(self, request):
+        registrationNumber = request.data['registrationNumber']
+        domain = request.data['domain']
+        if not registrationNumber or not domain:
+            return Response(data={"registrationNumber or domain doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        modelclass =apps.get_model('areze_yab',domain)
+        for company in companies:
+            self.objects.append(modelclass.objects.filter(company=company))
+        return Response(data=self.objects,status=status.HTTP_200_OK)
+    
