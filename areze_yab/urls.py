@@ -4,8 +4,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from areze_yab.views import *
+from rest_framework.routers import DefaultRouter
+
+
+
+router = DefaultRouter()
+router.register(r'history', HistoryViewSet, basename='history')
+
 
 urlpatterns = [
+    *router.urls,
     path('company/', CompanyAPIView.as_view()),
     path('sales_and_marketing/', SalesAndMarketingAPIView.as_view()),
     path('human_resources/', HumanResourceAPIView.as_view()),

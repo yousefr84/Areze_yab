@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django.utils.translation import gettext as _
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
@@ -57,6 +58,45 @@ class CompanyAPIView(APIView):
             company.user.add(user)
             serializer = CompanySerializer(company)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class HistoryViewSet(ViewSet):
+    objects = []
+
+    @action(detail=False, methods=['get'])
+    def All(self, request):
+        registrationNumber = request.query_params.get('registrationNumber')
+        if not registrationNumber:
+            return Response(data={"user_id doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        for company in companies:
+            self.objects.append(SalesAndMarketing.objects.filter(company=company))
+            self.objects.append(Branding.objects.filter(company=company))
+            self.objects.append(ProductCompetitiveness.objects.filter(company=company))
+            self.objects.append(ResearchAndDevelopment.objects.filter(company=company))
+            self.objects.append(ManufacturingAndProduction.objects.filter(company=company))
+        return Response(data=self.objects, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def Companyies(self, request):
+        registrationNumber = request.query_params.get('registrationNumber')
+        if not registrationNumber:
+            return Response(data={"registrationNumber doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        serializer = CompanySerializer(companies, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def DomainFilter(self, request):
+        registrationNumber = request.query_params.get('registrationNumber')
+        domain = request.query_params.get('domain')
+        if not registrationNumber or not domain:
+            return Response(data={"registrationNumber or domain doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        modelclass = apps.get_model('areze_yab', domain)
+        for company in companies:
+            self.objects.append(modelclass.objects.filter(company=company))
+        return Response(data=self.objects, status=status.HTTP_200_OK)
 
 
 class BaseAPIView(APIView):
@@ -117,12 +157,14 @@ class BaseAPIView(APIView):
 
         results = {}
         answers = self.model_class.objects.filter(company=company).last()
-        fields = self.subdomains  # آرایه‌ای از اسم فیلدها، مثلاً ['innovation', 'strategy', 'culture']
+        fields = [field for fields_list in self.subdomains.values() for field in fields_list]
         text = []
         for field in fields:
             val = getattr(answers, field, None)
             if val is not None and hasattr(val, 'text') and val.text is not None:
                 text.append(val.text)
+
+        questions_answers = dict(zip(self.questions, text))
 
         prompt = f"""
         I want a branding analysis report based on the following questionnaire responses.
@@ -135,10 +177,9 @@ class BaseAPIView(APIView):
         Go directly into the analysis. Do not include any introductions.
 
         Company size: Small, with 10 employees
-
-        questions = {self.questions}
         
-        answers = {text}
+        {questions_answers}
+        
         Please write the report in Persian, using a professional tone and clear structure.
         """
         response = openai.ChatCompletion.create(
@@ -346,38 +387,11 @@ class BrandingAPIView(BaseAPIView):
     domain = 'برندینگ'
     subdomains = {}
     finall = "is_visual_design_of_brand_consistent"
-
-
-class HistoryViewSet(ViewSet):
-    objects = []
-
-    def All(self, request):
-        registrationNumber = request.data['registrationNumber']
-        if not registrationNumber:
-            return Response(data={"user_id doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
-        for company in companies:
-            self.objects.append(SalesAndMarketing.objects.filter(company=company))
-            self.objects.append(Branding.objects.filter(company=company))
-            self.objects.append(ProductCompetitiveness.objects.filter(company=company))
-            self.objects.append(ResearchAndDevelopment.objects.filter(company=company))
-            self.objects.append(ManufacturingAndProduction.objects.filter(company=company))
-        return Response(data=self.objects,status=status.HTTP_200_OK)
-    def Companyies(self, request):
-        registrationNumber = request.data['registrationNumber']
-        if not registrationNumber:
-            return Response(data={"registrationNumber doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
-        serializer = CompanySerializer(companies, many=True)
-        return Response(data=serializer.data,status=status.HTTP_200_OK)
-    def DomainFilter(self, request):
-        registrationNumber = request.data['registrationNumber']
-        domain = request.data['domain']
-        if not registrationNumber or not domain:
-            return Response(data={"registrationNumber or domain doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
-        modelclass =apps.get_model('areze_yab',domain)
-        for company in companies:
-            self.objects.append(modelclass.objects.filter(company=company))
-        return Response(data=self.objects,status=status.HTTP_200_OK)
-    
+    questions = ["آیا شرکت هویت برند خود را به‌صورت مستند تعریف کرده است؟", "آیا شرکت شخصیت برند خود را مشخص کرده است؟",
+                 "چگونه شهرت برند در بازار را رصد و مدیریت می‌کنید؟",
+                 "تا چه حد با مشتریان ارتباط عاطفی برقرار کرده‌اید؟",
+                 "آیا برای برند خود شعار یا پیامی دارید؟", "چگونه بازخورد مشتریان را جمع‌آوری می‌کنید؟",
+                 "آیا برند شما در شبکه‌های اجتماعی فعال است؟", "آیا کارکنان با ارزش‌ها و مأموریت برند آشنا هستند",
+                 "آیا طراحی بصری برند (لوگو، رنگ‌ها) یکپارچه است؟",
+                 "آیا برنامه‌ای برای بهبود شناخت برند در بازار دارید؟",
+                 ]
