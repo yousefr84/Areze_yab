@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="history without debug">
+    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="test and dibug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,7 +103,10 @@
       <workItem from="1744435455375" duration="327000" />
       <workItem from="1744447286832" duration="2357000" />
       <workItem from="1744459297531" duration="2947000" />
-      <workItem from="1744526258277" duration="5121000" />
+      <workItem from="1744526258277" duration="5466000" />
+      <workItem from="1744532614233" duration="1888000" />
+      <workItem from="1744536800284" duration="266000" />
+      <workItem from="1744537800382" duration="319000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -129,7 +132,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744463081696</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="test and dibug">
+      <option name="closed" value="true" />
+      <created>1744531738838</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1744531738838</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,6 +161,7 @@
     <MESSAGE value="Branding model without testing" />
     <MESSAGE value="Branding serializer and view without testing" />
     <MESSAGE value="history without debug" />
-    <option name="LAST_COMMIT_MESSAGE" value="history without debug" />
+    <MESSAGE value="test and dibug" />
+    <option name="LAST_COMMIT_MESSAGE" value="test and dibug" />
   </component>
 </project>

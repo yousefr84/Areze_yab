@@ -9,7 +9,7 @@ from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
-router.register(r'history', HistoryViewSet, basename='history')
+router.register(r'dashboard', HistoryViewSet, basename='history')
 
 
 urlpatterns = [
