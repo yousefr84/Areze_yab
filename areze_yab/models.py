@@ -32,6 +32,9 @@ class CharIntegerField(models.Field):
     def _parse_value(self, raw_value):
         return CharInteger(raw_value)
 
+    def db_type(self, connection):
+        # نوع داده پایگاه داده که باید برای این فیلد استفاده شود (برای مثال: VARCHAR)
+        return f"VARCHAR({self.max_length})"
 
 class CharInteger:
     def __init__(self, raw_value):
@@ -41,6 +44,7 @@ class CharInteger:
         self._parse_value()
 
     def _parse_value(self):
+        # جدا کردن قسمت عددی و متنی
         match = re.match(r'(\d+)([a-zA-Z]*)', self.raw)
         if match:
             self.number = int(match.group(1))

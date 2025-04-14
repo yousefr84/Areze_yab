@@ -65,34 +65,41 @@ class HistoryViewSet(ViewSet):
 
     @action(detail=False, methods=['get'])
     def All(self, request):
-        registrationNumber = request.query_params.get('registrationNumber')
+        registrationNumber = request.query_params.get('nationalID')
+        try:
+            user = CustomUser.objects.get(username=registrationNumber)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "user not found"}, status=status.HTTP_400_BAD_REQUEST)
         if not registrationNumber:
             return Response(data={"user_id doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
+        companies = Company.objects.filter(user=user)
         for company in companies:
             self.objects.append(SalesAndMarketing.objects.filter(company=company))
             self.objects.append(Branding.objects.filter(company=company))
             self.objects.append(ProductCompetitiveness.objects.filter(company=company))
             self.objects.append(ResearchAndDevelopment.objects.filter(company=company))
             self.objects.append(ManufacturingAndProduction.objects.filter(company=company))
-        return Response(data=self.objects, status=status.HTTP_200_OK)
+        return Response(data={
+                                "History":self.objects,
+                                "Companies":companies
+                              }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def Companyies(self, request):
-        registrationNumber = request.query_params.get('registrationNumber')
+        registrationNumber = request.query_params.get('nationalID')
         if not registrationNumber:
-            return Response(data={"registrationNumber doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
+            return Response(data={"nationalID doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(nationalID=registrationNumber)
         serializer = CompanySerializer(companies, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def DomainFilter(self, request):
-        registrationNumber = request.query_params.get('registrationNumber')
+        registrationNumber = request.query_params.get('nationalID')
         domain = request.query_params.get('domain')
         if not registrationNumber or not domain:
-            return Response(data={"registrationNumber or domain doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
-        companies = Company.objects.filter(registrationNumber=registrationNumber)
+            return Response(data={"nationalID or domain doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+        companies = Company.objects.filter(nationalID=registrationNumber)
         modelclass = apps.get_model('areze_yab', domain)
         for company in companies:
             self.objects.append(modelclass.objects.filter(company=company))
