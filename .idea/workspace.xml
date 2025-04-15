@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="debug other models">
+      <change afterPath="$PROJECT_DIR$/areze_yab/questions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
@@ -16,6 +17,13 @@
   </component>
   <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
     <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -109,6 +117,8 @@
       <workItem from="1744537800382" duration="319000" />
       <workItem from="1744538557181" duration="62000" />
       <workItem from="1744608640349" duration="2381000" />
+      <workItem from="1744696406007" duration="830000" />
+      <workItem from="1744707563574" duration="798000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />

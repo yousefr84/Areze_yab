@@ -121,7 +121,8 @@ class BaseAPIView(APIView):
             return Response(data={"error": "nationalID is required"}, status=status.HTTP_400_BAD_REQUEST)
         user_id = request.data['userid']
         answer = request.data['answer']
-
+        if not answer:
+            return Response(data={"error": "answer is required"}, status=status.HTTP_400_BAD_REQUEST)
         if not user_id:
             return Response(data={"error": "userid is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -136,11 +137,12 @@ class BaseAPIView(APIView):
         if answer:
             if answer == self.finall:
                 data['is_draft'] = False
-                serializer = self.serializer_class(data=request.data)
-        if not serializer.is_valid():
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
+            serializer = self.serializer_class(data=request.data)
+            if not serializer.is_valid():
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(data="answer dose not exist", status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         nationalID = request.query_params.get('nationalID')

@@ -101,239 +101,240 @@ class BaseDomain(models.Model):
 
 class SalesAndMarketing(BaseDomain):
     # <------------Branding------------>
-    brandIdentity = CharIntegerField(default=0,max_length=100)
-    visualIdentityActivities = CharIntegerField(default=0,max_length=100)
-    brandReputationManagement = CharIntegerField(default=0,max_length=100)
-    brandTrustAndEmotionalConnection = CharIntegerField(default=0,max_length=100)
+    brandIdentity = CharIntegerField(max_length=100)
+    visualIdentityActivities = CharIntegerField(max_length=100)
+    brandReputationManagement = CharIntegerField(max_length=100)
+    brandTrustAndEmotionalConnection = CharIntegerField(max_length=100)
     # <------------MarketShare------------>
-    marketResearchOpportunities = CharIntegerField(default=0,max_length=100)
-    salesToIndustryRatio = CharIntegerField(default=0,max_length=100)
-    marketLeadershipPotential = CharIntegerField(default=0,max_length=100)
+    marketResearchOpportunities = CharIntegerField(max_length=100)
+    salesToIndustryRatio = CharIntegerField(max_length=100)
+    marketLeadershipPotential = CharIntegerField(max_length=100)
     # <------------DistributionAndSalesChannels------------>
-    orderDeliveryTimeliness = CharIntegerField(default=0,max_length=100)
-    salesNetworkCoverage = CharIntegerField(default=0,max_length=100)
-    salesAgencySupervision = CharIntegerField(default=0,max_length=100)
-    salesRepProductAwareness = CharIntegerField(default=0,max_length=100)
-    reliableTransportUsage = CharIntegerField(default=0,max_length=100)
+    orderDeliveryTimeliness = CharIntegerField(max_length=100)
+    salesNetworkCoverage = CharIntegerField(max_length=100)
+    salesAgencySupervision = CharIntegerField(max_length=100)
+    salesRepProductAwareness = CharIntegerField(max_length=100)
+    reliableTransportUsage = CharIntegerField(max_length=100)
 
     # <------------MarketingAndSalesStrategy------------>
-    digitalMarketingUsage = CharIntegerField(default=0,max_length=100)
-    marketResearchForMarketing = CharIntegerField(default=0,max_length=100)
-    marketingPlanningAndGuidelines = CharIntegerField(default=0,max_length=100)
-    marketingAndSalesNetworking = CharIntegerField(default=0,max_length=100)
-    innovativeMarketingUsage = CharIntegerField(default=0,max_length=100)
-    exhibitionParticipation = CharIntegerField(default=0,max_length=100)
+    digitalMarketingUsage = CharIntegerField(max_length=100)
+    marketResearchForMarketing = CharIntegerField(max_length=100)
+    marketingPlanningAndGuidelines = CharIntegerField(max_length=100)
+    marketingAndSalesNetworking = CharIntegerField(max_length=100)
+    innovativeMarketingUsage = CharIntegerField(max_length=100)
+    exhibitionParticipation = CharIntegerField(max_length=100)
 
     # <------------SalesHistory------------>
-    salesAmountToCostRatio = CharIntegerField(max_length=100, default=0)
-    salesGrowthLast3Months = CharIntegerField(max_length=100, default=0)
-    salesToProductionRatio = CharIntegerField(max_length=100, default=0)
+    salesAmountToCostRatio = CharIntegerField(max_length=100)
+    salesGrowthLast3Months = CharIntegerField(max_length=100)
+    salesToProductionRatio = CharIntegerField(max_length=100)
 
     # <------------TargetMarketKnowledge------------>
-    targetMarketDefinition = CharIntegerField(max_length=100, default=0)
-    marketRegulationsKnowledge = CharIntegerField(max_length=100, default=0)
-    competitorAwareness = CharIntegerField(max_length=100, default=0)
+    targetMarketDefinition = CharIntegerField(max_length=100)
+    marketRegulationsKnowledge = CharIntegerField(max_length=100)
+    competitorAwareness = CharIntegerField(max_length=100)
 
     # <------------ExportActivities------------>
-    exportActivitiesAndGlobalMarketUse = CharIntegerField(max_length=100, default=0)
+    exportActivitiesAndGlobalMarketUse = CharIntegerField(max_length=100)
 
 
 # <------------Human Resources------------>
 class HumanResources(BaseDomain):
     # <------------Workforce Numbers------------>
-    daily_operations_with_current_workforce = CharIntegerField(max_length=100, blank=True)
-    backlog_of_daily_tasks = CharIntegerField(max_length=100, blank=True)
-    available_workforce_for_new_projects = CharIntegerField(max_length=100, blank=True)
+    daily_operations_with_current_workforce = CharIntegerField(max_length=100)
+    backlog_of_daily_tasks = CharIntegerField(max_length=100)
+    available_workforce_for_new_projects = CharIntegerField(max_length=100)
 
     # <------------Employee Retention------------>
-    employees_with_minimum_5_years_experience = CharIntegerField(max_length=100, blank=True)
-    employee_satisfaction_percentage = CharIntegerField(max_length=100, blank=True)
-    employee_requests_for_new_jobs = CharIntegerField(max_length=100, blank=True)
-    employee_requests_for_early_retirement = CharIntegerField(max_length=100, blank=True)
-    organizational_support_for_employees = CharIntegerField(max_length=100, blank=True)
-    annual_salary_increase_adjusted_for_inflation = CharIntegerField(max_length=100, blank=True)
+    employees_with_minimum_5_years_experience = CharIntegerField(max_length=100)
+    employee_satisfaction_percentage = CharIntegerField(max_length=100)
+    employee_requests_for_new_jobs = CharIntegerField(max_length=100)
+    employee_requests_for_early_retirement = CharIntegerField(max_length=100)
+    organizational_support_for_employees = CharIntegerField(max_length=100)
+    annual_salary_increase_adjusted_for_inflation = CharIntegerField(max_length=100)
 
     # <------------Employee Productivity------------>
-    management_satisfaction_with_employees = CharIntegerField(max_length=100, blank=True)
-    employee_satisfaction_with_management = CharIntegerField(max_length=100, blank=True)
-    revenue_per_employee = CharIntegerField(max_length=100, blank=True)
-    employee_responsibility_and_commitment = CharIntegerField(max_length=100, blank=True)
+    management_satisfaction_with_employees = CharIntegerField(max_length=100)
+    employee_satisfaction_with_management = CharIntegerField(max_length=100)
+    revenue_per_employee = CharIntegerField(max_length=100)
+    employee_responsibility_and_commitment = CharIntegerField(max_length=100)
 
     # <------------Employee Performance Evaluation System------------>
-    performance_evaluation_system_scheduling = CharIntegerField(max_length=100, blank=True)
-    up_to_date_technology_in_performance_evaluation = CharIntegerField(max_length=100, blank=True)
-    evaluation_criteria_alignment_with_job_description = CharIntegerField(max_length=100, blank=True)
-    practical_model_for_employee_ranking = CharIntegerField(max_length=100, blank=True)
+    performance_evaluation_system_scheduling = CharIntegerField(max_length=100)
+    up_to_date_technology_in_performance_evaluation = CharIntegerField(max_length=100)
+    evaluation_criteria_alignment_with_job_description = CharIntegerField(max_length=100)
+    practical_model_for_employee_ranking = CharIntegerField(max_length=100)
 
     # <------------Employee Training System------------>
-    in_house_training_programs = CharIntegerField(max_length=100, blank=True)
-    support_for_attending_training_programs = CharIntegerField(max_length=100, blank=True)
+    in_house_training_programs = CharIntegerField(max_length=100)
+    support_for_attending_training_programs = CharIntegerField(max_length=100)
 
     # <------------Collaboration and Teamwork------------>
-    manager_focus_on_team_processes = CharIntegerField(max_length=100, blank=True)
-    employee_interest_in_group_work = CharIntegerField(max_length=100, blank=True)
-    shared_workspaces_availability = CharIntegerField(max_length=100, blank=True)
-    weekly_fixed_meetings = CharIntegerField(max_length=100, blank=True)
-    manager_employee_interaction = CharIntegerField(max_length=100, blank=True)
+    manager_focus_on_team_processes = CharIntegerField(max_length=100)
+    employee_interest_in_group_work = CharIntegerField(max_length=100)
+    shared_workspaces_availability = CharIntegerField(max_length=100)
+    weekly_fixed_meetings = CharIntegerField(max_length=100)
+    manager_employee_interaction = CharIntegerField(max_length=100)
 
     # <------------Ethical Values Awareness------------>
-    respect_for_employee_privacy = CharIntegerField(max_length=100, blank=True)
-    managers_behavior_towards_men_and_women = CharIntegerField(max_length=100, blank=True)
+    respect_for_employee_privacy = CharIntegerField(max_length=100)
+    managers_behavior_towards_men_and_women = CharIntegerField(max_length=100)
 
 
 # <------------Financial Resources------------>
 class FinancialResources(BaseDomain):
     # <------------Operating Cash Flow------------>
-    ability_to_maintain_positive_cash_flow = CharIntegerField(max_length=100, blank=True)
+    ability_to_maintain_positive_cash_flow = CharIntegerField(max_length=100)
 
     # <------------Current Ratio------------>
-    ability_to_pay_financial_obligations = CharIntegerField(max_length=100, blank=True)
+    ability_to_pay_financial_obligations = CharIntegerField(max_length=100)
 
     # <------------Working Capital------------>
-    assets_for_short_term_financial_obligations = CharIntegerField(max_length=100, blank=True)
+    assets_for_short_term_financial_obligations = CharIntegerField(max_length=100)
 
     # <------------Capital Burn Rate------------>
-    weekly_monthly_annual_expenses = CharIntegerField(max_length=100, blank=True)
+    weekly_monthly_annual_expenses = CharIntegerField(max_length=100)
 
     # <------------Net Profit Margin------------>
-    profitability_efficiency_comparison = CharIntegerField(max_length=100, blank=True)
+    profitability_efficiency_comparison = CharIntegerField(max_length=100)
 
     # <------------Accounts Payable Turnover------------>
-    ability_to_pay_accounts_payable = CharIntegerField(max_length=100, blank=True)
+    ability_to_pay_accounts_payable = CharIntegerField(max_length=100)
 
     # <------------Total Financial Performance Cost------------>
-    payment_processing_costs = CharIntegerField(max_length=100, blank=True)
+    payment_processing_costs = CharIntegerField(max_length=100)
 
     # <------------Financial Activity Cost Ratio------------>
-    financial_activity_cost_to_income_ratio = CharIntegerField(max_length=100, blank=True)
+    financial_activity_cost_to_income_ratio = CharIntegerField(max_length=100)
 
     # <------------Financial Error Reporting------------>
-    financial_report_accuracy_and_completeness = CharIntegerField(max_length=100, blank=True)
+    financial_report_accuracy_and_completeness = CharIntegerField(max_length=100)
 
     # <------------Budget Deviation------------>
-    budget_vs_actual_difference = CharIntegerField(max_length=100, blank=True)
+    budget_vs_actual_difference = CharIntegerField(max_length=100)
 
     # <------------Sales Growth------------>
-    sales_change_over_period = CharIntegerField(max_length=100, blank=True)
+    sales_change_over_period = CharIntegerField(max_length=100)
 
 
 # <------------Capital Structure------------>
 class CapitalStructure(BaseDomain):
     # <------------Funding Sources------------>
-    shareholder_funding_power = CharIntegerField(max_length=100, blank=True)
-    availability_of_resources_for_new_projects = CharIntegerField(max_length=100, blank=True)
+    shareholder_funding_power = CharIntegerField(max_length=100)
+    availability_of_resources_for_new_projects = CharIntegerField(max_length=100)
 
     # <------------Risk Tolerance------------>
-    startup_investment_risk_tolerance = CharIntegerField(max_length=100, blank=True)
+    startup_investment_risk_tolerance = CharIntegerField(max_length=100)
 
 
 # <------------Management & Organizational Structure------------>
 class ManagementOrganizationalStructure(BaseDomain):
     # <------------Organizational Chart------------>
-    comprehensive_organizational_chart = CharIntegerField(max_length=100, blank=True)
-    regular_chart_updates = CharIntegerField(max_length=100, blank=True)
+    comprehensive_organizational_chart = CharIntegerField(max_length=100)
+    regular_chart_updates = CharIntegerField(max_length=100)
 
     # <------------Knowledge and Information Management System------------>
-    information_system_for_knowledge_management = CharIntegerField(max_length=100, blank=True)
-    knowledge_management_system_integration = CharIntegerField(max_length=100, blank=True)
+    information_system_for_knowledge_management = CharIntegerField(max_length=100)
+    knowledge_management_system_integration = CharIntegerField(max_length=100)
 
     # <------------Workplace Organization System------------>
-    workspace_design = CharIntegerField(max_length=100, blank=True)
-    five_s_in_daily_operations = CharIntegerField(max_length=100, blank=True)
+    workspace_design = CharIntegerField(max_length=100)
+    five_s_in_daily_operations = CharIntegerField(max_length=100)
 
     # <------------Management Strategy and Vision------------>
-    vision_and_mission_definition = CharIntegerField(max_length=100, blank=True)
-    employee_awareness_of_long_short_term_plans = CharIntegerField(max_length=100, blank=True)
-    activities_for_increasing_customer_awareness = CharIntegerField(max_length=100, blank=True)
+    vision_and_mission_definition = CharIntegerField(max_length=100)
+    employee_awareness_of_long_short_term_plans = CharIntegerField(max_length=100)
+    activities_for_increasing_customer_awareness = CharIntegerField(max_length=100)
 
     # <------------Delegation of Authority------------>
-    decision_making_power_for_lower_employees = CharIntegerField(max_length=100, blank=True)
+    decision_making_power_for_lower_employees = CharIntegerField(max_length=100)
 
 
 # <------------Customer Relationship Management------------>
 class CustomerRelationshipManagement(BaseDomain):
     # <------------Feedback System------------>
-    purchase_info_documentation = CharIntegerField(max_length=100, blank=True)
-    customer_feedback_system = CharIntegerField(max_length=100, blank=True)
-    customer_feedback_analysis = CharIntegerField(max_length=100, blank=True)
+    purchase_info_documentation = CharIntegerField(max_length=100)
+    customer_feedback_system = CharIntegerField(max_length=100)
+    customer_feedback_analysis = CharIntegerField(max_length=100)
 
     # <------------Facilities------------>
-    special_sales_plan_for_loyal_customers = CharIntegerField(max_length=100, blank=True)
-    loyal_customer_payment_benefits = CharIntegerField(max_length=100, blank=True)
-    first_purchase_support_plan = CharIntegerField(max_length=100, blank=True)
+    special_sales_plan_for_loyal_customers = CharIntegerField(max_length=100)
+    loyal_customer_payment_benefits = CharIntegerField(max_length=100)
+    first_purchase_support_plan = CharIntegerField(max_length=100)
 
     # <------------Customer Retention------------>
-    employee_training_for_customer_interaction = CharIntegerField(max_length=100, blank=True)
-    loyal_customer_count = CharIntegerField(max_length=100, blank=True)
+    employee_training_for_customer_interaction = CharIntegerField(max_length=100)
+    loyal_customer_count = CharIntegerField(max_length=100)
 
 
 class ManufacturingAndProduction(BaseDomain):
     # <------------Monthly Production------------>
-    production_increase_planning = CharIntegerField(max_length=100, blank=True)
-    safety_stock_level = CharIntegerField(max_length=100, blank=True)
-    storage_cost = CharIntegerField(max_length=100, blank=True)
-    production_stability = CharIntegerField(max_length=100, blank=True)
-    max_capacity_utilization = CharIntegerField(max_length=100, blank=True)
+    production_increase_planning = CharIntegerField(max_length=100)
+    safety_stock_level = CharIntegerField(max_length=100)
+    storage_cost = CharIntegerField(max_length=100)
+    production_stability = CharIntegerField(max_length=100)
+    max_capacity_utilization = CharIntegerField(max_length=100)
 
     # <------------Production Management System------------>
-    production_process_documentation = CharIntegerField(max_length=100, blank=True)
-    defect_detection_and_resolution = CharIntegerField(max_length=100, blank=True)
-    production_process_flexibility = CharIntegerField(max_length=100, blank=True)
+    production_process_documentation = CharIntegerField(max_length=100)
+    defect_detection_and_resolution = CharIntegerField(max_length=100)
+    production_process_flexibility = CharIntegerField(max_length=100)
 
     # <------------Production Technology------------>
-    production_technology_level = CharIntegerField(max_length=100, blank=True)
-    iot_equipment_in_production_line = CharIntegerField(max_length=100, blank=True)
+    production_technology_level = CharIntegerField(max_length=100)
+    iot_equipment_in_production_line = CharIntegerField(max_length=100)
 
     # <------------Market-Driven Production------------>
-    production_sales_marketing_alignment = CharIntegerField(max_length=100, blank=True)
+    production_sales_marketing_alignment = CharIntegerField(max_length=100)
 
     # <------------Production Efficiency------------>
-    output_input_ratio = CharIntegerField(max_length=100, blank=True)
-    production_waste_ppm = CharIntegerField(max_length=100, blank=True)
+    output_input_ratio = CharIntegerField(max_length=100)
+    production_waste_ppm = CharIntegerField(max_length=100)
 
     # <------------National and International Standards------------>
-    required_certifications = CharIntegerField(max_length=100, blank=True)
+    required_certifications = CharIntegerField(max_length=100)
 
     # <------------Warranty------------>
-    warranty_after_sales = CharIntegerField(max_length=100, blank=True)
-    warranty_commitment = CharIntegerField(max_length=100, blank=True)
+    warranty_after_sales = CharIntegerField(max_length=100)
+    warranty_commitment = CharIntegerField(max_length=100)
 
     # <------------Quality Control System------------>
-    quality_control_lab = CharIntegerField(max_length=100, blank=True)
-    z = CharIntegerField(max_length=100, blank=True)
+    quality_control_lab = CharIntegerField(max_length=100)
+    z = CharIntegerField(max_length=100)
 
 
 # <------------Research & Development------------>
 class ResearchAndDevelopment(BaseDomain):
     # <------------Product Improvement------------>
-    r_and_d_unit_defined_roles = CharIntegerField(max_length=100, blank=True)
-    r_and_d_production_connection = CharIntegerField(max_length=100, blank=True)
-    r_and_d_budget = CharIntegerField(max_length=100, blank=True)
+    r_and_d_unit_defined_roles = CharIntegerField(max_length=100)
+    r_and_d_production_connection = CharIntegerField(max_length=100)
+    r_and_d_budget = CharIntegerField(max_length=100)
 
     # <------------Innovation------------>
-    innovation_planning = CharIntegerField(max_length=100, blank=True)
-    innovation_process_guidelines = CharIntegerField(max_length=100, blank=True)
-    customer_competitor_inspiration = CharIntegerField(max_length=100, blank=True)
-    innovation_culture = CharIntegerField(max_length=100, blank=True)
+    innovation_planning = CharIntegerField(max_length=100)
+    innovation_process_guidelines = CharIntegerField(max_length=100)
+    customer_competitor_inspiration = CharIntegerField(max_length=100)
+    innovation_culture = CharIntegerField(max_length=100)
 
 
 # <------------Product Competitiveness------------>
 class ProductCompetitiveness(BaseDomain):
-    unique_feature = CharIntegerField(max_length=100, blank=True)
+    unique_feature = CharIntegerField(max_length=100)
 
 
 # <------------Branding------------>
 class Branding(BaseDomain):
-    has_documented_brand_identity = CharIntegerField(max_length=100,blank=True)
-    has_defined_brand_personality = CharIntegerField(max_length=100,blank=True)
-    tracks_and_manages_brand_reputation = CharIntegerField(max_length=100,blank=True)
-    establishes_emotional_connection_with_customers = CharIntegerField(max_length=100,blank=True)
-    has_brand_slogan = CharIntegerField(max_length=100,blank=True)
-    has_customer_feedback_system = CharIntegerField(max_length=100,blank=True)
-    is_brand_active_on_social_media = CharIntegerField(max_length=100,blank=True)
-    employees_are_familiar_with_brand_values_and_mission = CharIntegerField(max_length=100,blank=True)
-    is_brand_visual_design_consistent = CharIntegerField(max_length=100,blank=True)
-    is_visual_design_of_brand_consistent = CharIntegerField(max_length=100,blank=True)
+    has_documented_brand_identity = CharIntegerField(max_length=100)
+    has_defined_brand_personality = CharIntegerField(max_length=100)
+    tracks_and_manages_brand_reputation = CharIntegerField(max_length=100)
+    establishes_emotional_connection_with_customers = CharIntegerField(max_length=100)
+    has_brand_slogan = CharIntegerField(max_length=100)
+    has_customer_feedback_system = CharIntegerField(max_length=100)
+    is_brand_active_on_social_media = CharIntegerField(max_length=100)
+    employees_are_familiar_with_brand_values_and_mission = CharIntegerField(max_length=100)
+    is_brand_visual_design_consistent = CharIntegerField(max_length=100)
+    is_visual_design_of_brand_consistent = CharIntegerField(max_length=100)
+    
 
 
 
