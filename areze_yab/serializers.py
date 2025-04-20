@@ -2,27 +2,6 @@ from rest_framework import serializers
 from areze_yab.models import *
 
 
-class CharIntegerSerializerField(serializers.Field):
-    def to_representation(self, value):
-        return {
-            "number": value.number,
-            "text": value.text,
-            "raw": value.raw
-        }
-
-    def to_internal_value(self, data):
-        if isinstance(data, dict):
-            return f"{data.get('number', '')}{data.get('text', '')}"
-        return data
-
-
-class SmartModelSerializer(serializers.ModelSerializer):
-    def build_standard_field(self, field_name, model_field):
-        if isinstance(model_field, CharIntegerField):
-            return CharIntegerSerializerField(), self.get_field_kwargs(field_name, model_field)
-        return super().build_standard_field(field_name, model_field)
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -105,7 +84,8 @@ class ManufacturingAndProductionSerializer(serializers.ModelSerializer):
         model = ManufacturingAndProduction
         fields = '__all__'
 
-class BrandingSerializer(SmartModelSerializer):
+
+class BrandingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Branding
         fields = '__all__'

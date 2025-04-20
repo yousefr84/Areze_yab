@@ -27,7 +27,7 @@ class RegisterAPIView(APIView):
                     user = CustomUser.objects.get(id=serializer.data['id'])
                     company = Company.objects.create(name=serializer.data['name'],
                                                      registrationNumber=serializer.data['registrationNumber'],
-                                                     nationalID=serializer.data['username'])
+                                                     nationalID=serializer.data['username'], size=request.data['size'])
                     company.user.add(CustomUser.objects.get(id=serializer.data['id']))
                 except IntegrityError as e:
                     return Response({'error': _('Company creation failed: {}').format(str(e))},
@@ -74,15 +74,20 @@ class HistoryViewSet(ViewSet):
             return Response(data={"user_id doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
         companies = Company.objects.filter(user=user)
         for company in companies:
-            self.objects.append(SalesAndMarketing.objects.filter(company=company))
-            self.objects.append(Branding.objects.filter(company=company))
-            self.objects.append(ProductCompetitiveness.objects.filter(company=company))
-            self.objects.append(ResearchAndDevelopment.objects.filter(company=company))
-            self.objects.append(ManufacturingAndProduction.objects.filter(company=company))
+            self.objects.append(
+                SalesAndMarketingSerializer(SalesAndMarketing.objects.filter(company=company), many=True).data)
+            self.objects.append(BrandingSerializer(Branding.objects.filter(company=company)).data)
+            self.objects.append(ProductCompetitivenessSerializer(ProductCompetitiveness.objects.filter(company=company),
+                                                                 many=True).data)
+            self.objects.append(ResearchAndDevelopmentSerializer(ResearchAndDevelopment.objects.filter(company=company),
+                                                                 many=True).data)
+            self.objects.append(
+                ManufacturingAndProductionSerializer(ManufacturingAndProduction.objects.filter(company=company),
+                                                     many=True).data)
         return Response(data={
-                                "History":self.objects,
-                                "Companies":companies
-                              }, status=status.HTTP_200_OK)
+            "History": self.objects,
+            "Companies": companies
+        }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def Companyies(self, request):
@@ -121,8 +126,7 @@ class BaseAPIView(APIView):
             return Response(data={"error": "nationalID is required"}, status=status.HTTP_400_BAD_REQUEST)
         user_id = request.data['userid']
         answer = request.data['answer']
-        if not answer:
-            return Response(data={"error": "answer is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         if not user_id:
             return Response(data={"error": "userid is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -134,15 +138,13 @@ class BaseAPIView(APIView):
         except Company.DoesNotExist:
             return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         request.data['company'] = company.id
-        if answer:
-            if answer == self.finall:
-                data['is_draft'] = False
-            serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
-                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            serializer.save()
-            return Response(status=status.HTTP_200_OK)
-        return Response(data="answer dose not exist", status=status.HTTP_400_BAD_REQUEST)
+        if answer == self.finall:
+            data['is_draft'] = False
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
     def get(self, request):
         nationalID = request.query_params.get('nationalID')
@@ -165,38 +167,33 @@ class BaseAPIView(APIView):
             return Response(data={"error": "Company does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         results = {}
+        subdomains = self.subdomains
+        questions = self.questions
         answers = self.model_class.objects.filter(company=company).last()
-        fields = [field for fields_list in self.subdomains.values() for field in fields_list]
-        text = []
-        for field in fields:
-            val = getattr(answers, field, None)
-            if val is not None and hasattr(val, 'text') and val.text is not None:
-                text.append(val.text)
 
-        questions_answers = dict(zip(self.questions, text))
+        results = {}
 
-        prompt = f"""
-        I want a branding analysis report based on the following questionnaire responses.
+        # برای هر زیرحوزه، سوالات و پاسخ‌ها را ترکیب می‌کنیم
+        for subdomain, fields in subdomains.items():
+            # گرفتن مقادیر فیلدها از مدل answers
+            values = [getattr(answers, field, None) for field in fields]
 
-        The report must include:
-        1. A general analysis of the company’s current branding status considering its size
-        2. Strengths and weaknesses of current branding based on the answers and up-to-date research in the field
-        3. Five specific and practical suggestions to improve the branding strategy according to the responses
+            # برای هر سوال در زیرحوزه، پاسخ‌ها را از مقادیر فیلدها می‌گیریم
+            subdomain_results = {}
+            for question, value in zip(questions[subdomain], values):
+                subdomain_results[question] = value
 
-        Go directly into the analysis. Do not include any introductions.
+            # ذخیره نتایج در دیکشنری کلی
+            results[subdomain] = subdomain_results
 
-        Company size: Small, with 10 employees
-        
-        {questions_answers}
-        
-        Please write the report in Persian, using a professional tone and clear structure.
-        """
+        prompt = ''
+
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a professional branding consultant. Your task is to analyze questionnaire responses and generate strategic branding reports. Always respond in Persian with a professional tone and clear structure. Do not include any introductions or general explanations — go straight into the analysis."
+                    "content": f"تصور کن به عنوان یک کارشناس در حوزه {self.domain} قصد داری {self.domain} یک شرکت با مقیاس {company.size} را عارضه یابی کنی"
                 },
                 {
                     "role": "user",
@@ -206,11 +203,11 @@ class BaseAPIView(APIView):
         )
 
         response = response['choices'][0]['message']['content']
-        scores = []
-        for field in fields:
-            val = getattr(answers, field, None)
-        if val is not None and hasattr(val, 'number') and val.number is not None:
-            scores.append(val.number)
+        # scores = []
+        # for field in fields:
+        #     val = getattr(answers, field, None)
+        # if val is not None and hasattr(val, 'number') and val.number is not None:
+        #     scores.append(val.number)
 
         # for subdomain, fields in subdomains.items():
         #     values = []
@@ -230,11 +227,11 @@ class BaseAPIView(APIView):
 
         # results["Overall Score"] = sum(all_scores) / len(all_scores) if all_scores else 0
 
-        overall_score = sum(scores) / len(scores) if scores else 0
+        # overall_score = sum(scores) / len(scores) if scores else 0
         return Response({
             "company": company_serializer.data,
             "domain": self.domain,
-            "overallScore": overall_score,
+            # "overallScore": overall_score,
             "response": response,
         }, status=status.HTTP_200_OK)
 
