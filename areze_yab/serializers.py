@@ -19,26 +19,64 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class SalesAndMarketingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalesAndMarketing
-        fields = '__all__'
-
-
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"
 
 
-class HumanResourcesSerializer(serializers.ModelSerializer):
+class SalesAndMarketingSSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
-        model = HumanResources
+        model = SalesAndMarketingS
+        fields = '__all__'
+
+
+class SalesAndMarketingMSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = SalesAndMarketingM
+        fields = '__all__'
+
+
+class SalesAndMarketingLSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = SalesAndMarketingL
+        fields = '__all__'
+
+
+class HumanResourcesSSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = HumanResourcesS
+        fields = '__all__'
+
+
+class HumanResourcesMSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = HumanResourcesM
+        fields = '__all__'
+
+
+class HumanResourcesLSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = HumanResourcesL
         fields = '__all__'
 
 
 # <------------Financial Resources Serializer------------>
 class FinancialResourcesSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = FinancialResources
         fields = '__all__'
@@ -46,6 +84,8 @@ class FinancialResourcesSerializer(serializers.ModelSerializer):
 
 # <------------Capital Structure Serializer------------>
 class CapitalStructureSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = CapitalStructure
         fields = '__all__'
@@ -53,6 +93,8 @@ class CapitalStructureSerializer(serializers.ModelSerializer):
 
 # <------------Management & Organizational Structure Serializer------------>
 class ManagementOrganizationalStructureSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = ManagementOrganizationalStructure
         fields = '__all__'
@@ -60,6 +102,8 @@ class ManagementOrganizationalStructureSerializer(serializers.ModelSerializer):
 
 # <------------Customer Relationship Management Serializer------------>
 class CustomerRelationshipManagementSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = CustomerRelationshipManagement
         fields = '__all__'
@@ -67,6 +111,8 @@ class CustomerRelationshipManagementSerializer(serializers.ModelSerializer):
 
 # <------------Research & Development Serializer------------>
 class ResearchAndDevelopmentSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = ResearchAndDevelopment
         fields = '__all__'
@@ -74,18 +120,40 @@ class ResearchAndDevelopmentSerializer(serializers.ModelSerializer):
 
 # <------------Product Competitiveness Serializer------------>
 class ProductCompetitivenessSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = ProductCompetitiveness
         fields = '__all__'
 
 
 class ManufacturingAndProductionSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
         model = ManufacturingAndProduction
         fields = '__all__'
 
 
-class BrandingSerializer(serializers.ModelSerializer):
+class BrandingSSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
     class Meta:
-        model = Branding
+        model = BrandingS
+        fields = '__all__'
+
+
+class BrandingMSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = BrandingM
+        fields = '__all__'
+
+
+class BrandingLSerializer(serializers.ModelSerializer):
+    company = CompanySerializer()
+
+    class Meta:
+        model = BrandingL
         fields = '__all__'

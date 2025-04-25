@@ -1,6 +1,6 @@
+openai
 django
-django-rest-framwork
+djangorestframework
+django-cors-headers
 djangorestframework-simplejwt
-
-# mysqlclient
-# django-cors-headers
+mysqlclient

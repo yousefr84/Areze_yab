@@ -27,6 +27,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterAPIView.as_view(), name='register'),
+    path('branding/', BrandingAPIView.as_view(), name='branding'),
     # path('request/', send_request, name='request'),
     # path('verify/', verify, name='verify'),
 ]

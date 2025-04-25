@@ -5,17 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="change answer system without testing">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/9fddc6cb-d4c5-4b17-bfa9-bd02cbd5e607.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/9fddc6cb-d4c5-4b17-bfa9-bd02cbd5e607/storage_v2/_src_/schema/main.uQUzAA.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Areze_yab.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.dockerignor." afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/commands.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArezeYabi.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Arezeyab.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Areza_Yabi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Areze_yab.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/migrations/0001_initial.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +32,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
@@ -55,23 +59,48 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "fb357610",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "http.proxy",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;74b56573&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/yousef/Documents/lgCompanyQuestions.json&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
+    <configuration name="Areze_yab" type="Python.DjangoServer" factoryName="Django server">
+      <module name="Areze_yab" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <option name="port" value="8000" />
+      <option name="host" value="" />
+      <option name="additionalOptions" value="" />
+      <option name="browserUrl" value="" />
+      <option name="runTestServer" value="false" />
+      <option name="runNoReload" value="false" />
+      <option name="useCustomRunCommand" value="false" />
+      <option name="customRunCommand" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Areze_yab" type="Python.DjangoServer" factoryName="Django server">
       <module name="Areze_yab" />
       <option name="ENV_FILES" value="" />
@@ -132,7 +161,21 @@
       <workItem from="1745039396749" duration="3549000" />
       <workItem from="1745124019348" duration="29000" />
       <workItem from="1745130050076" duration="2327000" />
-      <workItem from="1745132462090" duration="3612000" />
+      <workItem from="1745132462090" duration="4404000" />
+      <workItem from="1745143027567" duration="2000" />
+      <workItem from="1745159888599" duration="763000" />
+      <workItem from="1745214200160" duration="8294000" />
+      <workItem from="1745226992409" duration="1159000" />
+      <workItem from="1745233149811" duration="881000" />
+      <workItem from="1745256033281" duration="1168000" />
+      <workItem from="1745258127510" duration="915000" />
+      <workItem from="1745340138978" duration="3421000" />
+      <workItem from="1745384824090" duration="3527000" />
+      <workItem from="1745412131904" duration="11232000" />
+      <workItem from="1745473142691" duration="1619000" />
+      <workItem from="1745480997806" duration="5467000" />
+      <workItem from="1745556798123" duration="72000" />
+      <workItem from="1745564271861" duration="1459000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -174,7 +217,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744538608547</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="change answer system without testing">
+      <option name="closed" value="true" />
+      <created>1745136186264</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1745136186264</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

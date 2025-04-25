@@ -65,6 +65,7 @@ MIDDLEWARE = [
 CORS_ALLOW_METHODS = [
     "OPTIONS",
     "POST",
+    "PUT",
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -109,9 +110,9 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'innoneti_Areze_yab',
-#         'USER': 'innoneti_admin',
-#         'PASSWORD': 'm.yousef.r84',
+#         'NAME': 'innoneti_test',
+#         'USER': 'innoneti_test',
+#         'PASSWORD': 'test@dmin987654321',
 #         'HOST': 'localhost',
 #         'PORT': '3306',
 #         'OPTIONS': {

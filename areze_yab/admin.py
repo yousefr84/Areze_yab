@@ -7,12 +7,12 @@ class CompanyAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'nationalID')
 
 
-@admin.register(SalesAndMarketing)
+@admin.register(SalesAndMarketingS)
 class SalesAndMarketingAdmin(admin.ModelAdmin):
     list_display = ('company','date')
 
 
-@admin.register(HumanResources)
+@admin.register(HumanResourcesS)
 class HumanResourcesAdmin(admin.ModelAdmin):
     list_display = ('company','date')
 
