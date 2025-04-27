@@ -7,49 +7,17 @@ class CompanyAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'nationalID')
 
 
-@admin.register(SalesAndMarketing)
+@admin.register(SalesAndMarketingS)
 class SalesAndMarketingAdmin(admin.ModelAdmin):
     list_display = ('company','date')
 
 
-@admin.register(HumanResources)
+@admin.register(HumanResourcesS)
 class HumanResourcesAdmin(admin.ModelAdmin):
     list_display = ('company','date')
 
 
-@admin.register(FinancialResources)
-class FinancialResourcesAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
 
-
-@admin.register(CapitalStructure)
-class CapitalStructureAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
-
-
-@admin.register(CustomerRelationshipManagement)
-class CustomerRelationshipManagementAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
-
-
-@admin.register(ManagementOrganizationalStructure)
-class ManagementOrganizationalStructureAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
-
-
-@admin.register(ManufacturingAndProduction)
-class ManufacturingAndProductionAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
-
-
-@admin.register(ProductCompetitiveness)
-class ProductCompetitivenessAdmin(admin.ModelAdmin):
-    list_display = ('company', 'date')
-
-
-@admin.register(ResearchAndDevelopment)
-class ResearchAndDevelopmentAdmin(admin.ModelAdmin):
-    list_display = ('company', 'date')
 
 
 class CompanyInline(admin.TabularInline):
