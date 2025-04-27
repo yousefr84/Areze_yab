@@ -1,60 +1,10 @@
 import re
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import CharField
+
 
 # Create your models here.
-
-
-class CharIntegerField(models.Field):
-    description = "A custom field that stores both string and integer values separately"
-
-    def __init__(self, *args, **kwargs):
-        self.max_length = kwargs.get('max_length', 255)
-        super().__init__(*args, **kwargs)
-
-    def from_db_value(self, value, expression, connection):
-        if value is None:
-            return value
-        return self._parse_value(value)
-
-    def to_python(self, value):
-        if isinstance(value, CharInteger):
-            return value
-        if value is None:
-            return value
-        return self._parse_value(value)
-
-    def get_prep_value(self, value):
-        if isinstance(value, CharInteger):
-            return value.raw
-        return str(value)
-
-    def _parse_value(self, raw_value):
-        return CharInteger(raw_value)
-
-
-class CharInteger:
-    def __init__(self, raw_value):
-        self.raw = raw_value
-        self.number = None
-        self.text = None
-        self._parse_value()
-
-    def _parse_value(self):
-        match = re.match(r'(\d+)([a-zA-Z]*)', self.raw)
-        if match:
-            self.number = int(match.group(1))
-            self.text = match.group(2)
-        else:
-            self.number = None
-            self.text = self.raw
-
-    def __str__(self):
-        return self.raw
-
-    def __repr__(self):
-        return f"<CharInteger number={self.number}, text='{self.text}'>"
-
 
 class CustomUser(AbstractUser):
     is_company = models.BooleanField(default=False)
@@ -87,6 +37,9 @@ class Company(models.Model):
     name = models.CharField(max_length=100)
     registrationNumber = models.CharField(max_length=100)
     nationalID = models.CharField(max_length=100)
+    size = models.CharField(max_length=100)
+    company_domain = models.CharField(max_length=100)
+    is_company = models.BooleanField(default=True)
 
 
 class BaseDomain(models.Model):
@@ -95,244 +48,334 @@ class BaseDomain(models.Model):
     date = models.DateField(auto_now=True)
 
 
-class SalesAndMarketing(BaseDomain):
-    # <------------Branding------------>
-    brandIdentity = CharIntegerField(default=0,max_length=100)
-    visualIdentityActivities = CharIntegerField(default=0,max_length=100)
-    brandReputationManagement = CharIntegerField(default=0,max_length=100)
-    brandTrustAndEmotionalConnection = CharIntegerField(default=0,max_length=100)
-    # <------------MarketShare------------>
-    marketResearchOpportunities = CharIntegerField(default=0,max_length=100)
-    salesToIndustryRatio = CharIntegerField(default=0,max_length=100)
-    marketLeadershipPotential = CharIntegerField(default=0,max_length=100)
-    # <------------DistributionAndSalesChannels------------>
-    orderDeliveryTimeliness = CharIntegerField(default=0,max_length=100)
-    salesNetworkCoverage = CharIntegerField(default=0,max_length=100)
-    salesAgencySupervision = CharIntegerField(default=0,max_length=100)
-    salesRepProductAwareness = CharIntegerField(default=0,max_length=100)
-    reliableTransportUsage = CharIntegerField(default=0,max_length=100)
+class SalesAndMarketingS(BaseDomain):
+    documented_sales_strategy = models.CharField(max_length=100, blank=True, null=True)
+    sales_strategy_alignment_with_goals = models.CharField(max_length=100, blank=True, null=True)
+    documented_and_transparent_sales_process = models.CharField(max_length=100, blank=True, null=True)
+    regular_post_sale_follow_up = models.CharField(max_length=100, blank=True, null=True)
+    adequate_sales_team_size_and_expertise = models.CharField(max_length=100, blank=True, null=True)
+    sales_team_training_program = models.CharField(max_length=100, blank=True, null=True)
+    regular_market_analysis_for_opportunities_and_threats = models.CharField(max_length=100, blank=True, null=True)
+    accurate_up_to_date_target_market_data = models.CharField(max_length=100, blank=True, null=True)
+    customer_relationship_management_system = models.CharField(max_length=100, blank=True, null=True)
+    regular_customer_data_and_experience_analysis = models.CharField(max_length=100, blank=True, null=True)
+    digital_marketing_tools_usage = models.CharField(max_length=100, blank=True, null=True)
+    digital_marketing_sales_strategy_alignment = models.CharField(max_length=100, blank=True, null=True)
+    special_offers_targeted_discounts_for_sales = models.CharField(max_length=100, blank=True, null=True)
 
-    # <------------MarketingAndSalesStrategy------------>
-    digitalMarketingUsage = CharIntegerField(default=0,max_length=100)
-    marketResearchForMarketing = CharIntegerField(default=0,max_length=100)
-    marketingPlanningAndGuidelines = CharIntegerField(default=0,max_length=100)
-    marketingAndSalesNetworking = CharIntegerField(default=0,max_length=100)
-    innovativeMarketingUsage = CharIntegerField(default=0,max_length=100)
-    exhibitionParticipation = CharIntegerField(default=0,max_length=100)
+    documented_sales_strategyNum = models.IntegerField(default=0)
+    sales_strategy_alignment_with_goalsNum = models.IntegerField(default=0)
+    documented_and_transparent_sales_processNum = models.IntegerField(default=0)
+    regular_post_sale_follow_upNum = models.IntegerField(default=0)
+    adequate_sales_team_size_and_expertiseNum = models.IntegerField(default=0)
+    sales_team_training_programNum = models.IntegerField(default=0)
+    regular_market_analysis_for_opportunities_and_threatsNum = models.IntegerField(default=0)
+    accurate_up_to_date_target_market_dataNum = models.IntegerField(default=0)
+    customer_relationship_management_systemNum = models.IntegerField(default=0)
+    regular_customer_data_and_experience_analysisNum = models.IntegerField(default=0)
+    digital_marketing_tools_usageNum = models.IntegerField(default=0)
+    digital_marketing_sales_strategy_alignmentNum = models.IntegerField(default=0)
+    special_offers_targeted_discounts_for_salesNum = models.IntegerField(default=0)
 
-    # <------------SalesHistory------------>
-    salesAmountToCostRatio = CharIntegerField(max_length=100, default=0)
-    salesGrowthLast3Months = CharIntegerField(max_length=100, default=0)
-    salesToProductionRatio = CharIntegerField(max_length=100, default=0)
 
-    # <------------TargetMarketKnowledge------------>
-    targetMarketDefinition = CharIntegerField(max_length=100, default=0)
-    marketRegulationsKnowledge = CharIntegerField(max_length=100, default=0)
-    competitorAwareness = CharIntegerField(max_length=100, default=0)
+class SalesAndMarketingM(BaseDomain):
+    regular_sales_strategy_updates = models.CharField(max_length=100, blank=True, null=True)
+    sales_strategy_suitability_for_target_segments = models.CharField(max_length=100, blank=True, null=True)
+    sales_strategy_with_short_long_term_goals = models.CharField(max_length=100, blank=True, null=True)
+    documented_transparent_sales_process_for_team = models.CharField(max_length=100, blank=True, null=True)
+    using_specialized_software_for_sales_process_management = models.CharField(max_length=100, blank=True, null=True)
+    sales_process_flexibility_for_market_changes = models.CharField(max_length=100, blank=True, null=True)
+    using_data_analytics_to_improve_sales_process = models.CharField(max_length=100, blank=True, null=True)
+    regular_evaluation_of_sales_team_based_on_performance = models.CharField(max_length=100, blank=True, null=True)
+    continuous_training_for_sales_team_skills = models.CharField(max_length=100, blank=True, null=True)
+    sales_team_goals_alignment_with_company_goals = models.CharField(max_length=100, blank=True, null=True)
+    regular_feedback_and_coaching_for_sales_team = models.CharField(max_length=100, blank=True, null=True)
+    regular_market_analysis = models.CharField(max_length=100, blank=True, null=True)
+    competitor_analysis_and_using_data_for_sales_strategy = models.CharField(max_length=100, blank=True, null=True)
+    market_analysis_attention_to_new_needs_and_demand_changes = models.CharField(max_length=100, blank=True, null=True)
+    advanced_crm_system_for_customer_relationship_management = models.CharField(max_length=100, blank=True, null=True)
+    crm_system_ability_to_analyze_customer_data_and_behavior = models.CharField(max_length=100, blank=True, null=True)
+    digital_analytics_tools_for_evaluating_marketing_campaigns = models.CharField(max_length=100, blank=True, null=True)
+    optimizing_digital_marketing_based_on_analytics_data = models.CharField(max_length=100, blank=True, null=True)
+    regular_targeted_advertising_for_new_customers = models.CharField(max_length=100, blank=True, null=True)
+    using_discounts_and_special_offers_for_sales_promotion = models.CharField(max_length=100, blank=True, null=True)
 
-    # <------------ExportActivities------------>
-    exportActivitiesAndGlobalMarketUse = CharIntegerField(max_length=100, default=0)
+    regular_sales_strategy_updatesNum = models.IntegerField(default=0)
+    sales_strategy_suitability_for_target_segmentsNum = models.IntegerField(default=0)
+    sales_strategy_with_short_long_term_goalsNum = models.IntegerField(default=0)
+    documented_transparent_sales_process_for_teamNum = models.IntegerField(default=0)
+    using_specialized_software_for_sales_process_managementNum = models.IntegerField(default=0)
+    sales_process_flexibility_for_market_changesNum = models.IntegerField(default=0)
+    using_data_analytics_to_improve_sales_processNum = models.IntegerField(default=0)
+    regular_evaluation_of_sales_team_based_on_performanceNum = models.IntegerField(default=0)
+    continuous_training_for_sales_team_skillsNum = models.IntegerField(default=0)
+    sales_team_goals_alignment_with_company_goalsNum = models.IntegerField(default=0)
+    regular_feedback_and_coaching_for_sales_teamNum = models.IntegerField(default=0)
+    regular_market_analysisNum = models.IntegerField(default=0)
+    competitor_analysis_and_using_data_for_sales_strategyNum = models.IntegerField(default=0)
+    market_analysis_attention_to_new_needs_and_demand_changesNum = models.IntegerField(default=0)
+    advanced_crm_system_for_customer_relationship_managementNum = models.IntegerField(default=0)
+    crm_system_ability_to_analyze_customer_data_and_behaviorNum = models.IntegerField(default=0)
+    digital_analytics_tools_for_evaluating_marketing_campaignsNum = models.IntegerField(default=0)
+    optimizing_digital_marketing_based_on_analytics_dataNum = models.IntegerField(default=0)
+    regular_targeted_advertising_for_new_customersNum = models.IntegerField(default=0)
+    using_discounts_and_special_offers_for_sales_promotionNum = models.IntegerField(default=0)
+
+
+class SalesAndMarketingL(BaseDomain):
+    sales_strategy_including_multiple_channels_online_offline_partners = models.CharField(max_length=100, blank=True,
+                                                                                          null=True,
+                                                                                          db_column="sales_channels_strategy")
+    sales_strategy_tailored_for_each_target_market = models.CharField(max_length=100, blank=True, null=True)
+    sales_strategy_with_plans_for_new_market_development = models.CharField(max_length=100, blank=True, null=True)
+    automated_sales_process_for_efficiency_and_error_reduction = models.CharField(max_length=100, blank=True, null=True)
+    kpis_defined_for_each_stage_of_sales_process = models.CharField(max_length=100, blank=True, null=True)
+    regular_evaluation_and_improvement_of_sales_process = models.CharField(max_length=100, blank=True, null=True)
+    using_market_experiences_and_customer_feedback_for_sales_strategy_improvement = models.CharField(max_length=100,
+                                                                                                     blank=True,
+                                                                                                     null=True,
+                                                                                                     db_column="market_feedback_strategy_improvement")
+    performance_based_motivational_programs_for_sales_team = models.CharField(max_length=100, blank=True, null=True)
+    continuous_sales_training_for_team = models.CharField(max_length=100, blank=True, null=True)
+    advanced_market_analysis_tools = models.CharField(max_length=100, blank=True, null=True)
+    identifying_new_markets_with_updated_data = models.CharField(max_length=100, blank=True, null=True)
+    crm_integrated_with_other_systems = models.CharField(max_length=100, blank=True, null=True)
+    crm_real_time_customer_data_update = models.CharField(max_length=100, blank=True, null=True)
+    advanced_digital_marketing_tools_usage = models.CharField(max_length=100, blank=True, null=True)
+    digital_campaign_optimization_based_on_data_analysis = models.CharField(max_length=100, blank=True, null=True)
+    advertising_campaign_alignment_with_target_customers = models.CharField(max_length=100, blank=True, null=True)
+    advertising_adjustment_based_on_customer_needs = models.CharField(max_length=100, blank=True, null=True)
+
+    sales_strategy_including_multiple_channels_online_offline_partnersNum = models.IntegerField(default=0,
+                                                                                                db_column="sales_channels_strategy_num")
+    sales_strategy_tailored_for_each_target_marketNum = models.IntegerField(default=0)
+    sales_strategy_with_plans_for_new_market_developmentNum = models.IntegerField(default=0)
+    automated_sales_process_for_efficiency_and_error_reductionNum = models.IntegerField(default=0)
+    kpis_defined_for_each_stage_of_sales_processNum = models.IntegerField(default=0)
+    regular_evaluation_and_improvement_of_sales_processNum = models.IntegerField(default=0)
+    using_market_experiences_and_customer_feedback_for_sales_strategy_improvementNum = models.IntegerField(default=0,
+                                                                                                           db_column="market_feedback_strategy_improvement_num")
+    performance_based_motivational_programs_for_sales_teamNum = models.IntegerField(default=0)
+    continuous_sales_training_for_teamNum = models.IntegerField(default=0)
+    advanced_market_analysis_toolsNum = models.IntegerField(default=0)
+    identifying_new_markets_with_updated_dataNum = models.IntegerField(default=0)
+    crm_integrated_with_other_systemsNum = models.IntegerField(default=0)
+    crm_real_time_customer_data_updateNum = models.IntegerField(default=0)
+    advanced_digital_marketing_tools_usageNum = models.IntegerField(default=0)
+    digital_campaign_optimization_based_on_data_analysisNum = models.IntegerField(default=0)
+    advertising_campaign_alignment_with_target_customersNum = models.IntegerField(default=0)
+    advertising_adjustment_based_on_customer_needsNum = models.IntegerField(default=0)
 
 
 # <------------Human Resources------------>
-class HumanResources(BaseDomain):
-    # <------------Workforce Numbers------------>
-    daily_operations_with_current_workforce = CharIntegerField(max_length=100, blank=True)
-    backlog_of_daily_tasks = CharIntegerField(max_length=100, blank=True)
-    available_workforce_for_new_projects = CharIntegerField(max_length=100, blank=True)
+class HumanResourcesS(BaseDomain):
+    staffing_sufficiency = models.CharField(max_length=100, blank=True, null=True)
+    recruitment_planning = models.CharField(max_length=100, blank=True, null=True)
+    employee_turnover_rate = models.CharField(max_length=100, blank=True, null=True)
+    employee_turnover_reasons_attention = models.CharField(max_length=100, blank=True, null=True)
+    employee_performance_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    employee_productivity_tool = models.CharField(max_length=100, blank=True, null=True)
+    performance_evaluation_impact = models.CharField(max_length=100, blank=True, null=True)
+    employee_training_programs = models.CharField(max_length=100, blank=True, null=True)
+    training_impact_on_performance = models.CharField(max_length=100, blank=True, null=True)
+    employee_collaboration_effectiveness = models.CharField(max_length=100, blank=True, null=True)
+    teamwork_culture_exists = models.CharField(max_length=100, blank=True, null=True)
+    ethical_standards_attention = models.CharField(max_length=100, blank=True, null=True)
+    employee_professional_ethics = models.CharField(max_length=100, blank=True, null=True)
 
-    # <------------Employee Retention------------>
-    employees_with_minimum_5_years_experience = CharIntegerField(max_length=100, blank=True)
-    employee_satisfaction_percentage = CharIntegerField(max_length=100, blank=True)
-    employee_requests_for_new_jobs = CharIntegerField(max_length=100, blank=True)
-    employee_requests_for_early_retirement = CharIntegerField(max_length=100, blank=True)
-    organizational_support_for_employees = CharIntegerField(max_length=100, blank=True)
-    annual_salary_increase_adjusted_for_inflation = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Employee Productivity------------>
-    management_satisfaction_with_employees = CharIntegerField(max_length=100, blank=True)
-    employee_satisfaction_with_management = CharIntegerField(max_length=100, blank=True)
-    revenue_per_employee = CharIntegerField(max_length=100, blank=True)
-    employee_responsibility_and_commitment = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Employee Performance Evaluation System------------>
-    performance_evaluation_system_scheduling = CharIntegerField(max_length=100, blank=True)
-    up_to_date_technology_in_performance_evaluation = CharIntegerField(max_length=100, blank=True)
-    evaluation_criteria_alignment_with_job_description = CharIntegerField(max_length=100, blank=True)
-    practical_model_for_employee_ranking = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Employee Training System------------>
-    in_house_training_programs = CharIntegerField(max_length=100, blank=True)
-    support_for_attending_training_programs = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Collaboration and Teamwork------------>
-    manager_focus_on_team_processes = CharIntegerField(max_length=100, blank=True)
-    employee_interest_in_group_work = CharIntegerField(max_length=100, blank=True)
-    shared_workspaces_availability = CharIntegerField(max_length=100, blank=True)
-    weekly_fixed_meetings = CharIntegerField(max_length=100, blank=True)
-    manager_employee_interaction = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Ethical Values Awareness------------>
-    respect_for_employee_privacy = CharIntegerField(max_length=100, blank=True)
-    managers_behavior_towards_men_and_women = CharIntegerField(max_length=100, blank=True)
+    staffing_sufficiencyNum = models.IntegerField(default=0)
+    recruitment_planningNum = models.IntegerField(default=0)
+    employee_turnover_rateNum = models.IntegerField(default=0)
+    employee_turnover_reasons_attentionNum = models.IntegerField(default=0)
+    employee_performance_evaluationNum = models.IntegerField(default=0)
+    employee_productivity_toolNum = models.IntegerField(default=0)
+    performance_evaluation_impactNum = models.IntegerField(default=0)
+    employee_training_programsNum = models.IntegerField(default=0)
+    training_impact_on_performanceNum = models.IntegerField(default=0)
+    employee_collaboration_effectivenessNum = models.IntegerField(default=0)
+    teamwork_culture_existsNum = models.IntegerField(default=0)
+    ethical_standards_attentionNum = models.IntegerField(default=0)
+    employee_professional_ethicsNum = models.IntegerField(default=0)
 
 
-# <------------Financial Resources------------>
-class FinancialResources(BaseDomain):
-    # <------------Operating Cash Flow------------>
-    ability_to_maintain_positive_cash_flow = CharIntegerField(max_length=100, blank=True)
+class HumanResourcesM(BaseDomain):
+    staffing_vs_workload = models.CharField(max_length=100, blank=True, null=True)
+    recruitment_plan = models.CharField(max_length=100, blank=True, null=True)
+    employee_retention_level = models.CharField(max_length=100, blank=True, null=True)
+    employee_exit_reasons_analysis = models.CharField(max_length=100, blank=True, null=True)
+    key_employee_retention_plan = models.CharField(max_length=100, blank=True, null=True)
+    employee_performance_measurability = models.CharField(max_length=100, blank=True, null=True)
+    productivity_evaluator = models.CharField(max_length=100, blank=True, null=True)
+    employee_exit_alignment_with_goals = models.CharField(max_length=100, blank=True, null=True)
+    structured_performance_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    performance_evaluation_salary_promotion_impact = models.CharField(max_length=100, blank=True, null=True)
+    performance_evaluation_impact_on_salary_promotion = models.CharField(max_length=100, blank=True, null=True)
+    continuous_employee_training = models.CharField(max_length=100, blank=True, null=True)
+    training_effectiveness_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    training_budget_allocation = models.CharField(max_length=100, blank=True, null=True)
+    interdepartmental_collaboration = models.CharField(max_length=100, blank=True, null=True)
+    collaboration_enhancement_programs = models.CharField(max_length=100, blank=True, null=True)
+    teamwork_culture = models.CharField(max_length=100, blank=True, null=True)
+    ethical_behavior_of_employees = models.CharField(max_length=100, blank=True, null=True)
+    managers_as_role_models_for_ethics = models.CharField(max_length=100, blank=True, null=True)
+    professional_ethics_code = models.CharField(max_length=100, blank=True, null=True)
 
-    # <------------Current Ratio------------>
-    ability_to_pay_financial_obligations = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Working Capital------------>
-    assets_for_short_term_financial_obligations = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Capital Burn Rate------------>
-    weekly_monthly_annual_expenses = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Net Profit Margin------------>
-    profitability_efficiency_comparison = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Accounts Payable Turnover------------>
-    ability_to_pay_accounts_payable = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Total Financial Performance Cost------------>
-    payment_processing_costs = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Financial Activity Cost Ratio------------>
-    financial_activity_cost_to_income_ratio = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Financial Error Reporting------------>
-    financial_report_accuracy_and_completeness = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Budget Deviation------------>
-    budget_vs_actual_difference = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Sales Growth------------>
-    sales_change_over_period = CharIntegerField(max_length=100, blank=True)
-
-
-# <------------Capital Structure------------>
-class CapitalStructure(BaseDomain):
-    # <------------Funding Sources------------>
-    shareholder_funding_power = CharIntegerField(max_length=100, blank=True)
-    availability_of_resources_for_new_projects = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Risk Tolerance------------>
-    startup_investment_risk_tolerance = CharIntegerField(max_length=100, blank=True)
+    staffing_vs_workloadNum = models.IntegerField(default=0)
+    recruitment_planNum = models.IntegerField(default=0)
+    employee_retention_levelNum = models.IntegerField(default=0)
+    employee_exit_reasons_analysisNum = models.IntegerField(default=0)
+    key_employee_retention_planNum = models.IntegerField(default=0)
+    employee_performance_measurabilityNum = models.IntegerField(default=0)
+    productivity_evaluatorNum = models.IntegerField(default=0)
+    employee_exit_alignment_with_goalsNum = models.IntegerField(default=0)
+    structured_performance_evaluationNum = models.IntegerField(default=0)
+    performance_evaluation_salary_promotion_impactNum = models.IntegerField(default=0)
+    performance_evaluation_impact_on_salary_promotionNum = models.IntegerField(default=0)
+    continuous_employee_trainingNum = models.IntegerField(default=0)
+    training_effectiveness_evaluationNum = models.IntegerField(default=0)
+    training_budget_allocationNum = models.IntegerField(default=0)
+    interdepartmental_collaborationNum = models.IntegerField(default=0)
+    collaboration_enhancement_programsNum = models.IntegerField(default=0)
+    teamwork_cultureNum = models.IntegerField(default=0)
+    ethical_behavior_of_employeesNum = models.IntegerField(default=0)
+    managers_as_role_models_for_ethicsNum = models.IntegerField(default=0)
+    professional_ethics_codeNum = models.IntegerField(default=0)
 
 
-# <------------Management & Organizational Structure------------>
-class ManagementOrganizationalStructure(BaseDomain):
-    # <------------Organizational Chart------------>
-    comprehensive_organizational_chart = CharIntegerField(max_length=100, blank=True)
-    regular_chart_updates = CharIntegerField(max_length=100, blank=True)
+class HumanResourcesL(BaseDomain):
+    current_staff_meets_workload = models.CharField(max_length=100, blank=True, null=True)
+    organizational_structure_updated_for_growth = models.CharField(max_length=100, blank=True, null=True)
+    employee_turnover_rate_last_year = models.CharField(max_length=100, blank=True, null=True)
+    employee_satisfaction_loyalty_program = models.CharField(max_length=100, blank=True, null=True)
+    key_department_productivity_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    resources_for_productivity_increase = models.CharField(max_length=100, blank=True, null=True)
+    formal_performance_evaluation_system = models.CharField(max_length=100, blank=True, null=True)
+    feedback_leads_to_performance_improvement = models.CharField(max_length=100, blank=True, null=True)
+    structured_training_program_exists = models.CharField(max_length=100, blank=True, null=True)
+    training_leads_to_performance_improvement = models.CharField(max_length=100, blank=True, null=True)
+    team_collaboration_level = models.CharField(max_length=100, blank=True, null=True)
+    team_conflict_management = models.CharField(max_length=100, blank=True, null=True)
+    ethical_values_in_behavior = models.CharField(max_length=100, blank=True, null=True)
+    ethical_values_in_recruitment = models.CharField(max_length=100, blank=True, null=True)
 
-    # <------------Knowledge and Information Management System------------>
-    information_system_for_knowledge_management = CharIntegerField(max_length=100, blank=True)
-    knowledge_management_system_integration = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Workplace Organization System------------>
-    workspace_design = CharIntegerField(max_length=100, blank=True)
-    five_s_in_daily_operations = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Management Strategy and Vision------------>
-    vision_and_mission_definition = CharIntegerField(max_length=100, blank=True)
-    employee_awareness_of_long_short_term_plans = CharIntegerField(max_length=100, blank=True)
-    activities_for_increasing_customer_awareness = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Delegation of Authority------------>
-    decision_making_power_for_lower_employees = CharIntegerField(max_length=100, blank=True)
-
-
-# <------------Customer Relationship Management------------>
-class CustomerRelationshipManagement(BaseDomain):
-    # <------------Feedback System------------>
-    purchase_info_documentation = CharIntegerField(max_length=100, blank=True)
-    customer_feedback_system = CharIntegerField(max_length=100, blank=True)
-    customer_feedback_analysis = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Facilities------------>
-    special_sales_plan_for_loyal_customers = CharIntegerField(max_length=100, blank=True)
-    loyal_customer_payment_benefits = CharIntegerField(max_length=100, blank=True)
-    first_purchase_support_plan = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Customer Retention------------>
-    employee_training_for_customer_interaction = CharIntegerField(max_length=100, blank=True)
-    loyal_customer_count = CharIntegerField(max_length=100, blank=True)
-
-
-class ManufacturingAndProduction(BaseDomain):
-    # <------------Monthly Production------------>
-    production_increase_planning = CharIntegerField(max_length=100, blank=True)
-    safety_stock_level = CharIntegerField(max_length=100, blank=True)
-    storage_cost = CharIntegerField(max_length=100, blank=True)
-    production_stability = CharIntegerField(max_length=100, blank=True)
-    max_capacity_utilization = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Production Management System------------>
-    production_process_documentation = CharIntegerField(max_length=100, blank=True)
-    defect_detection_and_resolution = CharIntegerField(max_length=100, blank=True)
-    production_process_flexibility = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Production Technology------------>
-    production_technology_level = CharIntegerField(max_length=100, blank=True)
-    iot_equipment_in_production_line = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Market-Driven Production------------>
-    production_sales_marketing_alignment = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Production Efficiency------------>
-    output_input_ratio = CharIntegerField(max_length=100, blank=True)
-    production_waste_ppm = CharIntegerField(max_length=100, blank=True)
-
-    # <------------National and International Standards------------>
-    required_certifications = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Warranty------------>
-    warranty_after_sales = CharIntegerField(max_length=100, blank=True)
-    warranty_commitment = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Quality Control System------------>
-    quality_control_lab = CharIntegerField(max_length=100, blank=True)
-    z = CharIntegerField(max_length=100, blank=True)
-
-
-# <------------Research & Development------------>
-class ResearchAndDevelopment(BaseDomain):
-    # <------------Product Improvement------------>
-    r_and_d_unit_defined_roles = CharIntegerField(max_length=100, blank=True)
-    r_and_d_production_connection = CharIntegerField(max_length=100, blank=True)
-    r_and_d_budget = CharIntegerField(max_length=100, blank=True)
-
-    # <------------Innovation------------>
-    innovation_planning = CharIntegerField(max_length=100, blank=True)
-    innovation_process_guidelines = CharIntegerField(max_length=100, blank=True)
-    customer_competitor_inspiration = CharIntegerField(max_length=100, blank=True)
-    innovation_culture = CharIntegerField(max_length=100, blank=True)
-
-
-# <------------Product Competitiveness------------>
-class ProductCompetitiveness(BaseDomain):
-    unique_feature = CharIntegerField(max_length=100, blank=True)
+    current_staff_meets_workloadNum = models.IntegerField(default=0)
+    organizational_structure_updated_for_growthNum = models.IntegerField(default=0)
+    employee_turnover_rate_last_yearNum = models.IntegerField(default=0)
+    employee_satisfaction_loyalty_programNum = models.IntegerField(default=0)
+    key_department_productivity_evaluationNum = models.IntegerField(default=0)
+    resources_for_productivity_increaseNum = models.IntegerField(default=0)
+    formal_performance_evaluation_systemNum = models.IntegerField(default=0)
+    feedback_leads_to_performance_improvementNum = models.IntegerField(default=0)
+    structured_training_program_existsNum = models.IntegerField(default=0)
+    training_leads_to_performance_improvementNum = models.IntegerField(default=0)
+    team_collaboration_levelNum = models.IntegerField(default=0)
+    team_conflict_managementNum = models.IntegerField(default=0)
+    ethical_values_in_behaviorNum = models.IntegerField(default=0)
+    ethical_values_in_recruitmentNum = models.IntegerField(default=0)
 
 
 # <------------Branding------------>
-class Branding(BaseDomain):
-    has_documented_brand_identity = CharIntegerField(max_length=100,blank=True)
-    has_defined_brand_personality = CharIntegerField(max_length=100,blank=True)
-    tracks_and_manages_brand_reputation = CharIntegerField(max_length=100,blank=True)
-    establishes_emotional_connection_with_customers = CharIntegerField(max_length=100,blank=True)
-    has_brand_slogan = CharIntegerField(max_length=100,blank=True)
-    has_customer_feedback_system = CharIntegerField(max_length=100,blank=True)
-    is_brand_active_on_social_media = CharIntegerField(max_length=100,blank=True)
-    employees_are_familiar_with_brand_values_and_mission = CharIntegerField(max_length=100,blank=True)
-    is_brand_visual_design_consistent = CharIntegerField(max_length=100,blank=True)
-    is_visual_design_of_brand_consistent = CharIntegerField(max_length=100,blank=True)
+class BrandingS(BaseDomain):
+    brand_identity_clarity = models.CharField(max_length=100, blank=True, null=True)
+    staff_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+    customer_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+    social_media_presence = models.CharField(max_length=100, blank=True, null=True)
+    customer_brand_experience = models.CharField(max_length=100, blank=True, null=True)
+    customer_feedback_usage = models.CharField(max_length=100, blank=True, null=True)
+    customer_loyalty_programs = models.CharField(max_length=100, blank=True, null=True)
+    repeat_purchase_frequency = models.CharField(max_length=100, blank=True, null=True)
+    willingness_to_pay_more = models.CharField(max_length=100, blank=True, null=True)
+    brand_performance_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    customer_data_for_performance = models.CharField(max_length=100, blank=True, null=True)
+    brand_strategy_documentation = models.CharField(max_length=100, blank=True, null=True)
+    continuous_brand_investment = models.CharField(max_length=100, blank=True, null=True)
+    current_brand_innovation = models.CharField(max_length=100, blank=True, null=True)
+
+    brand_identity_clarityNum = models.IntegerField(default=0)
+    staff_brand_awarenessNum = models.IntegerField(default=0)
+    customer_brand_awarenessNum = models.IntegerField(default=0)
+    social_media_presenceNum = models.IntegerField(default=0)
+    customer_brand_experienceNum = models.IntegerField(default=0)
+    customer_feedback_usageNum = models.IntegerField(default=0)
+    customer_loyalty_programsNum = models.IntegerField(default=0)
+    repeat_purchase_frequencyNum = models.IntegerField(default=0)
+    willingness_to_pay_moreNum = models.IntegerField(default=0)
+    brand_performance_evaluationNum = models.IntegerField(default=0)
+    customer_data_for_performanceNum = models.IntegerField(default=0)
+    brand_strategy_documentationNum = models.IntegerField(default=0)
+    continuous_brand_investmentNum = models.IntegerField(default=0)
+    current_brand_innovationNum = models.IntegerField(default=0)
 
 
+class BrandingM(BaseDomain):
+    clear_brand_identity = models.CharField(max_length=100, blank=True, null=True)
+    brand_identity_alignment_with_strategy = models.CharField(max_length=100, blank=True, null=True)
+    brand_identity_for_cultural_clarity = models.CharField(max_length=100, blank=True, null=True)
+    brand_recognition_in_target_market = models.CharField(max_length=100, blank=True, null=True)
+    digital_advertising_for_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+    advertising_campaigns_for_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+    brand_association_with_quality = models.CharField(max_length=100, blank=True, null=True)
+    market_research_for_customer_experience = models.CharField(max_length=100, blank=True, null=True)
+    customer_feedback_for_brand_experience = models.CharField(max_length=100, blank=True, null=True)
+    processes_for_measuring_customer_experience = models.CharField(max_length=100, blank=True, null=True)
+    customer_feedback_for_product_service_improvement = models.CharField(max_length=100, blank=True, null=True)
+    special_programs_for_customer_loyalty = models.CharField(max_length=100, blank=True, null=True)
+    loyal_customers_for_brand_promotion = models.CharField(max_length=100, blank=True, null=True)
+    customer_loyalty_rewards = models.CharField(max_length=100, blank=True, null=True)
+    regular_brand_performance_evaluation = models.CharField(max_length=100, blank=True, null=True)
+
+    clear_brand_identityNum = models.IntegerField(default=0)
+    brand_identity_alignment_with_strategyNum = models.IntegerField(default=0)
+    brand_identity_for_cultural_clarityNum = models.IntegerField(default=0)
+    brand_recognition_in_target_marketNum = models.IntegerField(default=0)
+    digital_advertising_for_brand_awarenessNum = models.IntegerField(default=0)
+    advertising_campaigns_for_brand_awarenessNum = models.IntegerField(default=0)
+    brand_association_with_qualityNum = models.IntegerField(default=0)
+    market_research_for_customer_experienceNum = models.IntegerField(default=0)
+    customer_feedback_for_brand_experienceNum = models.IntegerField(default=0)
+    processes_for_measuring_customer_experienceNum = models.IntegerField(default=0)
+    customer_feedback_for_product_service_improvementNum = models.IntegerField(default=0)
+    special_programs_for_customer_loyaltyNum = models.IntegerField(default=0)
+    loyal_customers_for_brand_promotionNum = models.IntegerField(default=0)
+    customer_loyalty_rewardsNum = models.IntegerField(default=0)
+    regular_brand_performance_evaluationNum = models.IntegerField(default=0)
 
 
+class BrandingL(BaseDomain):
+    brand_identity_alignment_with_culture = models.CharField(max_length=100, blank=True, null=True)
+    employee_involvement_in_brand_identity = models.CharField(max_length=100, blank=True, null=True)
+    brand_identity_implementation_at_touchpoints = models.CharField(max_length=100, blank=True, null=True)
+    use_of_various_ad_campaigns_for_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+    use_of_multiple_channels_for_brand_promotion = models.CharField(max_length=100, blank=True, null=True)
+    use_of_data_and_analytics_in_ad_campaign_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    regular_brand_awareness_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    market_research_for_brand_experience = models.CharField(max_length=100, blank=True, null=True)
+    using_customer_data_for_brand_personalization = models.CharField(max_length=100, blank=True, null=True)
+    regular_customer_experience_evaluation = models.CharField(max_length=100, blank=True, null=True)
+    using_customer_feedback_for_brand_experience_improvement = models.CharField(max_length=100, blank=True, null=True)
+    has_loyalty_program_for_customers = models.CharField(max_length=100, blank=True, null=True)
+    use_loyal_customers_for_brand_awareness = models.CharField(max_length=100, blank=True, null=True)
+
+    brand_identity_alignment_with_cultureNum = models.IntegerField(default=0)
+    employee_involvement_in_brand_identityNum = models.IntegerField(default=0)
+    brand_identity_implementation_at_touchpointsNum = models.IntegerField(default=0)
+    use_of_various_ad_campaigns_for_brand_awarenessNum = models.IntegerField(default=0)
+    use_of_multiple_channels_for_brand_promotionNum = models.IntegerField(default=0)
+    use_of_data_and_analytics_in_ad_campaign_evaluationNum = models.IntegerField(default=0)
+    regular_brand_awareness_evaluationNum = models.IntegerField(default=0)
+    market_research_for_brand_experienceNum = models.IntegerField(default=0)
+    using_customer_data_for_brand_personalizationNum = models.IntegerField(default=0)
+    regular_customer_experience_evaluationNum = models.IntegerField(default=0)
+    using_customer_feedback_for_brand_experience_improvementNum = models.IntegerField(default=0)
+    has_loyalty_program_for_customersNum = models.IntegerField(default=0)
+    use_loyal_customers_for_brand_awarenessNum = models.IntegerField(default=0)
 
 
+class Financial(BaseDomain):
+    net_sales = models.CharField(max_length=100, blank=True, null=True)
+    net_profit_period = models.CharField(max_length=100, blank=True, null=True)
+    total_assets_end_period = models.CharField(max_length=100, blank=True, null=True)
+    average_assets_year = models.CharField(max_length=100, blank=True, null=True)
+    equity_end_period = models.CharField(max_length=100, blank=True, null=True)
+    financial_expenses = models.CharField(max_length=100, blank=True, null=True)
+    sales_change_percentage = models.CharField(max_length=100, blank=True, null=True)

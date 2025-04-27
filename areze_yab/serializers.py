@@ -2,27 +2,6 @@ from rest_framework import serializers
 from areze_yab.models import *
 
 
-class CharIntegerSerializerField(serializers.Field):
-    def to_representation(self, value):
-        return {
-            "number": value.number,
-            "text": value.text,
-            "raw": value.raw
-        }
-
-    def to_internal_value(self, data):
-        if isinstance(data, dict):
-            return f"{data.get('number', '')}{data.get('text', '')}"
-        return data
-
-
-class SmartModelSerializer(serializers.ModelSerializer):
-    def build_standard_field(self, field_name, model_field):
-        if isinstance(model_field, CharIntegerField):
-            return CharIntegerSerializerField(), self.get_field_kwargs(field_name, model_field)
-        return super().build_standard_field(field_name, model_field)
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -40,72 +19,97 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class SalesAndMarketingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalesAndMarketing
-        fields = '__all__'
-
-
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"
 
 
-class HumanResourcesSerializer(serializers.ModelSerializer):
+class SalesAndMarketingSSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = HumanResources
+        model = SalesAndMarketingS
         fields = '__all__'
 
 
-# <------------Financial Resources Serializer------------>
-class FinancialResourcesSerializer(serializers.ModelSerializer):
+class SalesAndMarketingMSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = FinancialResources
+        model = SalesAndMarketingM
         fields = '__all__'
 
 
-# <------------Capital Structure Serializer------------>
-class CapitalStructureSerializer(serializers.ModelSerializer):
+class SalesAndMarketingLSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = CapitalStructure
+        model = SalesAndMarketingL
         fields = '__all__'
 
 
-# <------------Management & Organizational Structure Serializer------------>
-class ManagementOrganizationalStructureSerializer(serializers.ModelSerializer):
+class HumanResourcesSSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = ManagementOrganizationalStructure
+        model = HumanResourcesS
         fields = '__all__'
 
 
-# <------------Customer Relationship Management Serializer------------>
-class CustomerRelationshipManagementSerializer(serializers.ModelSerializer):
+class HumanResourcesMSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = CustomerRelationshipManagement
+        model = HumanResourcesM
         fields = '__all__'
 
 
-# <------------Research & Development Serializer------------>
-class ResearchAndDevelopmentSerializer(serializers.ModelSerializer):
+class HumanResourcesLSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = ResearchAndDevelopment
+        model = HumanResourcesL
         fields = '__all__'
 
 
-# <------------Product Competitiveness Serializer------------>
-class ProductCompetitivenessSerializer(serializers.ModelSerializer):
+class BrandingSSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = ProductCompetitiveness
+        model = BrandingS
         fields = '__all__'
 
 
-class ManufacturingAndProductionSerializer(serializers.ModelSerializer):
+class BrandingMSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = ManufacturingAndProduction
+        model = BrandingM
         fields = '__all__'
 
-class BrandingSerializer(SmartModelSerializer):
+
+class BrandingLSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        model = Branding
+        model = BrandingL
+        fields = '__all__'
+
+
+class FinancialSerializer(serializers.ModelSerializer):
+    Company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Financial
         fields = '__all__'
