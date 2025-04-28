@@ -28,16 +28,21 @@ class CompanySerializer(serializers.ModelSerializer):
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['name', 'text', 'value']
+        fields = ['name', 'text']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    options = OptionSerializer(many=True)
+    options = serializers.SerializerMethodField()
+    question_type = serializers.CharField()
 
     class Meta:
         model = Question
-        fields = ['name', 'text', 'options']
+        fields = ['name', 'text', 'size', 'question_type', 'options']
 
+    def get_options(self, obj):
+        if obj.question_type == QuestionType.MULTIPLE_CHOICE:
+            return OptionSerializer(obj.options.all(), many=True).data
+        return []
 
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,12 +51,13 @@ class DomainSerializer(serializers.ModelSerializer):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    question = serializers.CharField(source='question.name')
-    option = serializers.CharField(source='option.name')
+    question = QuestionSerializer()
+    option = OptionSerializer(allow_null=True)
+    text_answer = serializers.CharField(allow_null=True, allow_blank=True)
 
     class Meta:
         model = Answer
-        fields = ['question', 'option']
+        fields = ['question', 'option', 'text_answer']
 
 
 class ReportSerializer(serializers.Serializer):

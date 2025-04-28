@@ -1,11 +1,12 @@
+import openai
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
 from areze_yab.serializers import *
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class RegisterAPIView(APIView):
@@ -123,13 +124,10 @@ class StartQuestionnaireView(APIView):
         domain = get_object_or_404(Domain, name=domain_name)
         size = company.size
         questionnaire = Questionnaire.objects.create(company=company, domain=domain)
-        print(size)
-        print(domain)
         questions = Question.objects.filter(
             subdomain__domain=domain,
             size=size,
         ).order_by('id')
-        print(questions)
         first_question = questions.first()
         number_of_questions = questions.count()
         if not first_question:
@@ -140,25 +138,55 @@ class StartQuestionnaireView(APIView):
 
 class SubmitAnswerView(APIView):
     def post(self, request, questionnaire_id):
-        nationalId = request.data.get('nationalID')
-        if not nationalId:
+        national_id = request.data.get('nationalID')
+        if not national_id:
             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
-        company = Company.objects.get(nationalID=nationalId)
+
+        try:
+            company = Company.objects.get(nationalID=national_id)
+        except ObjectDoesNotExist:
+            return Response(data={'error': 'Company with this nationalID does not exist'},
+                            status=status.HTTP_404_NOT_FOUND)
+
         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
+
         question_name = request.data.get('question')
         if not question_name:
             return Response(data={'error': 'question missing'}, status=status.HTTP_400_BAD_REQUEST)
-        option_name = request.data.get('option')
-        if not option_name:
-            return Response(data={'error': 'option missing'}, status=status.HTTP_400_BAD_REQUEST)
-        question = get_object_or_404(Question, name=question_name)
-        option = get_object_or_404(Option, name=option_name, question=question)
 
-        Answer.objects.create(
-            questionnaire=questionnaire,
-            question=question,
-            option=option
-        )
+        question = get_object_or_404(Question, name=question_name)
+
+        if question.subdomain.domain != questionnaire.domain or question.size != company.size:
+            return Response(data={'error': 'Invalid question for this questionnaire'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if Answer.objects.filter(questionnaire=questionnaire, question=question).exists():
+            return Response(data={'error': 'An answer for this question already exists'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if question.question_type == QuestionType.MULTIPLE_CHOICE:
+            option_name = request.data.get('option')
+            if not option_name:
+                return Response(data={'error': 'option missing for multiple choice question'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            option = get_object_or_404(Option, name=option_name, question=question)
+            text_answer = None
+        else:
+            text_answer = request.data.get('text_answer')
+            if not text_answer:
+                return Response(data={'error': 'text_answer missing for open-ended question'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            option = None
+
+        try:
+            Answer.objects.create(
+                questionnaire=questionnaire,
+                question=question,
+                option=option,
+                text_answer=text_answer
+            )
+        except Exception as e:
+            return Response(data={'error': 'Failed to save answer'}, status=status.HTTP_400_BAD_REQUEST)
 
         next_question = Question.objects.filter(
             subdomain__domain=questionnaire.domain,
@@ -175,38 +203,109 @@ class SubmitAnswerView(APIView):
 
 
 class ReportView(APIView):
+    def openAI(self, prompt, rule):
+        client = openai.OpenAI(api_key='')
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": rule},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            raise Exception("Failed to generate report from OpenAI")
+
     def get(self, request, questionnaire_id):
-        nationalId = request.query_params.get('nationalID')
-        company = Company.objects.get(nationalID=nationalId)
+        national_id = request.query_params.get('nationalID')
+        if not national_id:
+            return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            company = Company.objects.get(nationalID=national_id)
+        except ObjectDoesNotExist:
+            return Response(data={'error': 'Company with this nationalID does not exist'},
+                            status=status.HTTP_404_NOT_FOUND)
+
         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
         answers = questionnaire.answers.all()
 
         if not answers:
             return Response({"error": "No answers provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        overallscore = sum(answer.option.value for answer in answers) / len(answers)
+        mc_answers = answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
+        overallscore = None
+        if mc_answers.exists():
+            overallscore = sum(answer.option.value for answer in mc_answers) / mc_answers.count()
+            overallscore = round(overallscore, 2)
 
         messages = []
         for subdomain in questionnaire.domain.subdomains.all():
             subdomain_answers = answers.filter(question__subdomain=subdomain)
             if subdomain_answers:
-                messages.append(f"کاربر در زیرحوزه {subdomain.name} گزینه‌های زیر را انتخاب کرده است:")
+                messages.append(f"کاربر در زیرحوزه {subdomain.name} پاسخ‌های زیر را ارائه کرده است:")
                 for answer in subdomain_answers:
-                    messages.append(f"{answer.question.name}: {answer.option.text}")
+                    if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
+                        messages.append(f"{answer.question.name}: {answer.option.text} (امتیاز: {answer.option.value})")
+                    else:  # OPEN_ENDED
+                        messages.append(f"{answer.question.name}: {answer.text_answer}")
+        if questionnaire.domain == 'Financial':
+            prompt = f'''
+            تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی. اطلاعات مالی به شرح زیر است:
+                        {chr(10).join(messages)}
+
+            با توجه به این اطلاعات، تحلیل دوپونت را ارائه بده.
+            در ابتدای گزارش تحلیلی خود، در 4 پارگراف و حداقل 300 کلمه در باره ی ضرورت تحلیل صورت های مالی، توضیح مدل دوپونت و استفاده از این مدل برای تحلیل اطلاعات وارد شده توضیح بده.
+            
+            هر یک از شاخص های حاشیه سود خالص، گردش دارایی ها و اهرم مالی را به صورت منحصر به فرد در 2 پاراگراف و 120 کلمه تحلیل کن
+             همچنین برای تاثیرگذاری بهتر تحلیل در تصمیم گیری ها، راهکارهایی برای بهبود نسبت هایی که محاسبه کردی ارائه بده . فرمت ارائه راهکارها به شکل زیر باشد:
+              برای هر شاخص ، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن شاخص به گونه ای که برای صاحب کسب و کار که سطح آشنایی اولیه در حوزه مدیریت مالی دارد، به صورت ساده ارائه بده
+            یک بخش از گزارش که با بعد از توضیحات مقدماتی و قبل از تحلیل ها باشد را به محاسبات دوپونت اختصاص بده
+
+            
+            '''
+            rule = "تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی"
+        else:
+
+            prompt = f'''
+                    تصور کن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را عارضه یابی کنی. برای این کار پرسشنامه عارضه یابی {questionnaire.domain} در اختیار تو است. این پرسشنامه از حوزه های مختلف تشکیل شده و هر حوزه سوالات مربوط به خود که نشان دهنده ی شاخص های عملکردی حوزه {questionnaire.domain} است را   شامل می‌شود. هر حوزه را با توجه به پاسخ های داده شده ی مربوط به آن در 120 کلمه و 2 پاراگراف تحلیل کن. این تحلیل باید شامل گزارشی از وضعیت فعلی حوزه {questionnaire.domain}، نقاط قوت و ضعف و فرصت‌های بهبود باشد.  
+            همچنین برای هر حوزه، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن حوزه به گونه ای که برای صاحب کسب و کار با آشنایی اولیه در حوزه {questionnaire.domain} و به صورت ساده ارائه بده و برای هر پیشنهاد به صورت 
+            جداگانه  یک مثال عملیاتی و اجرایی در یک پاراگراف جدا که با کلمه "به طور مثال" شروع میشود بزن.
+            مثال:
+            پیشنهادات بهبود:
+            راه‌اندازی برنامه‌های ارجاع برای تشویق مشتریان وفادار به معرفی برند.
+            به طور مثال: (مثال عملیاتی)
+            برای هر حوزه از این مثال سمپل استفاده کن.
+             برای تاثیر بیشتر در عملکرد شرکت، دلیل پیشنهاد ارائه شده و لزوم اجرای آن را به صورت دقیق توضیح بده.        
+            پرسشنامه عارضه یابی {questionnaire.domain} به شرح زیر است:
+            {chr(10).join(messages)}
+            با توجه به پاسخ‌ها، در ابتدای گزارش عارضه یابی عملکرد شرکت را در حوزه {questionnaire.domain} که در سطح {questionnaire.company.size} قرار دارد را با در نظر گرفتن همه ی حوزه‌ها تحلیل کن و توضیحات را در 300 کلمه و 3 پاراگراف ارائه بده. در نظر داشته باش که این شرکت در زمینه {questionnaire.company.company_domain} فعالیت میکند. در تحلیل ها و راهکارهای پیشنهادی خود، زمینه {questionnaire.company.company_domain} را در نظر داشته باش.
+            متنی از خودت اضافه نکن و فقط گزارش را ارائه بده.
+                    '''
+            rule = f' تصور کن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را عارضه یابی کنی'
+
+        try:
+            response = self.openAI(prompt=prompt, rule=rule)
+        except Exception as e:
+            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         report = {
             "overallscore": overallscore,
-            "messages": "\n".join(messages)
+            "messages": response
         }
         return Response(ReportSerializer(report).data, status=status.HTTP_200_OK)
+
 
 class QuestionnairesView(APIView):
     def get(self, request):
         nationalId = request.query_params.get('nationalID')
         company = Company.objects.get(nationalID=nationalId)
-        questionnaires =Questionnaire.objects.filter(company=company)
-        serializer =QuestionnaireSerializer(questionnaires,many=True)
+        questionnaires = Questionnaire.objects.filter(company=company)
+        serializer = QuestionnaireSerializer(questionnaires, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class QuestionnaireStatusView(APIView):
     def get(self, request, questionnaire_id):
         nationalID = request.query_params.get('nationalID')
