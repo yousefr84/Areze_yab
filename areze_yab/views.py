@@ -12,48 +12,79 @@ from django.core.exceptions import ObjectDoesNotExist
 class RegisterAPIView(APIView):
     def post(self, request):
         data = request.data
-        name = data['name']
-        username = data['username']
-        password = data['password']
-        is_company = data['is_company']
-        if not data:
-            return Response(data={'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
-        if not password:
-            return Response(data={'No password provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # اعتبارسنجی داده‌های ورودی
+        try:
+            name = data.get('name')
+            username = data.get('username')
+            password = data.get('password')
+            repeat_password = data.get('repeatPassword')
+            is_company = data.get('is_company')
+        except KeyError as e:
+            return Response({'error': f'Missing field: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not name:
             return Response({'error': 'name is missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not username:
             return Response({'error': 'username is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        if not password:
+            return Response({'error': 'password is missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not is_company:
             return Response({'error': 'is_company is missing'}, status=status.HTTP_400_BAD_REQUEST)
-        if data['password'] != data['repeatPassword']:
+        if password != repeat_password:
             return Response({'error': 'رمز عبور و تکرار آن با هم برابر نیست'}, status=status.HTTP_400_BAD_REQUEST)
-        user = CustomUser.objects.create(username=username, password=password, is_company=is_company, name=name)
-        serializer = UserSerializer(user)
 
-        if is_company == "true" or is_company == "True":
+        # تبدیل is_company به بولین
+        is_company = str(is_company).lower() == 'true'
+
+        # ایجاد کاربر
+        try:
+            user = CustomUser.objects.create_user(
+                username=username,
+                password=password,
+                name=name,
+                is_company=is_company
+            )
+            user_serializer = UserSerializer(user)
+        except IntegrityError:
+            return Response({'error': 'نام کاربری قبلاً استفاده شده است'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': f'خطا در ایجاد کاربر: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # اگر کاربر شرکت است، شرکت را ایجاد کن
+        if is_company:
             try:
-                company_domain = data['company_domain']
+                company_domain = data.get('company_domain')
+                registration_number = data.get('registrationNumber')
+                size = data.get('size')
+                national_id = username  # استفاده از username به‌عنوان nationalID
+
                 if not company_domain:
-                    return Response(data={'error': 'company_domain is missing'}, status=status.HTTP_400_BAD_REQUEST)
-                registrationNumber = data['registrationNumber']
-                if not registrationNumber:
-                    return Response(data={'error': 'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
-                nationalID = username
-                size = data['size']
+                    return Response({'error': 'company_domain is missing'}, status=status.HTTP_400_BAD_REQUEST)
+                if not registration_number:
+                    return Response({'error': 'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
                 if not size:
-                    return Response(data={'error': 'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
-                company = Company.objects.create(company_domain=company_domain, name=name,
-                                                 registrationNumber=registrationNumber, nationalID=nationalID, )
-                company.size = size
-                company.user.add(CustomUser.objects.get(id=serializer.data['id']))
+                    return Response({'error': 'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
+                company = Company.objects.create(
+                    company_domain=company_domain,
+                    name=name,
+                    registrationNumber=registration_number,
+                    nationalID=national_id,
+                    size=size
+                )
+                # افزودن کاربر به شرکت
+                company.user.add(user)  # فرض می‌کنیم مدل Company فیلد user دارد
                 company.save()
-                serializer = CompanySerializer(company)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+                company_serializer = CompanySerializer(company)
+                return Response(company_serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
-                return Response({'error': _('Company creation failed: {}').format(str(e))},
-                                status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response({'error': f'خطا در ایجاد شرکت: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'error': f'خطا در ایجاد شرکت: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(user_serializer.data, status=status.HTTP_201_CREATED)
 
     def get(self, request):
         user_id = request.query_params.get('id')
@@ -199,12 +230,12 @@ class SubmitAnswerView(APIView):
             questionnaire.save()
             return Response({"message": "Questionnaire completed"}, status=status.HTTP_200_OK)
 
-        return Response(QuestionSerializer(next_question).data, status=status.HTTP_200_OK)
+        return Response(data={'question': QuestionSerializer(next_question).data}, status=status.HTTP_200_OK)
 
 
 class ReportView(APIView):
     def openAI(self, prompt, rule):
-        client = openai.OpenAI(api_key='')
+        client = openai.OpenAI(api_key='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')
         try:
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -222,48 +253,64 @@ class ReportView(APIView):
         if not national_id:
             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # پیدا کردن شرکت
         try:
             company = Company.objects.get(nationalID=national_id)
         except ObjectDoesNotExist:
             return Response(data={'error': 'Company with this nationalID does not exist'},
                             status=status.HTTP_404_NOT_FOUND)
 
+        # پیدا کردن پرسشنامه
         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
         answers = questionnaire.answers.all()
 
         if not answers:
             return Response({"error": "No answers provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # محاسبه میانگین کلی برای پاسخ‌های چهارگزینه‌ای
         mc_answers = answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
         overallscore = None
         if mc_answers.exists():
             overallscore = sum(answer.option.value for answer in mc_answers) / mc_answers.count()
             overallscore = round(overallscore, 2)
 
+        # محاسبه میانگین برای هر زیرحوزه
+        subdomain_scores = {}
         messages = []
         for subdomain in questionnaire.domain.subdomains.all():
             subdomain_answers = answers.filter(question__subdomain=subdomain)
             if subdomain_answers:
+                # پیام‌ها برای OpenAI
                 messages.append(f"کاربر در زیرحوزه {subdomain.name} پاسخ‌های زیر را ارائه کرده است:")
                 for answer in subdomain_answers:
                     if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
                         messages.append(f"{answer.question.name}: {answer.option.text} (امتیاز: {answer.option.value})")
                     else:  # OPEN_ENDED
                         messages.append(f"{answer.question.name}: {answer.text_answer}")
-        if questionnaire.domain == 'Financial':
+
+                # محاسبه میانگین برای پاسخ‌های چهارگزینه‌ای زیرحوزه
+                subdomain_mc_answers = subdomain_answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
+                if subdomain_mc_answers.exists():
+                    subdomain_score = sum(
+                        answer.option.value for answer in subdomain_mc_answers) / subdomain_mc_answers.count()
+                    subdomain_scores[subdomain.name] = round(subdomain_score, 2)
+                else:
+                    subdomain_scores[subdomain.name] = None
+
+        if questionnaire.domain.name == 'Financial':
             prompt = f'''
             تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی. اطلاعات مالی به شرح زیر است:
                         {chr(10).join(messages)}
 
             با توجه به این اطلاعات، تحلیل دوپونت را ارائه بده.
             در ابتدای گزارش تحلیلی خود، در 4 پارگراف و حداقل 300 کلمه در باره ی ضرورت تحلیل صورت های مالی، توضیح مدل دوپونت و استفاده از این مدل برای تحلیل اطلاعات وارد شده توضیح بده.
-            
+
             هر یک از شاخص های حاشیه سود خالص، گردش دارایی ها و اهرم مالی را به صورت منحصر به فرد در 2 پاراگراف و 120 کلمه تحلیل کن
              همچنین برای تاثیرگذاری بهتر تحلیل در تصمیم گیری ها، راهکارهایی برای بهبود نسبت هایی که محاسبه کردی ارائه بده . فرمت ارائه راهکارها به شکل زیر باشد:
               برای هر شاخص ، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن شاخص به گونه ای که برای صاحب کسب و کار که سطح آشنایی اولیه در حوزه مدیریت مالی دارد، به صورت ساده ارائه بده
             یک بخش از گزارش که با بعد از توضیحات مقدماتی و قبل از تحلیل ها باشد را به محاسبات دوپونت اختصاص بده
 
-            
+
             '''
             rule = "تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی"
         else:
@@ -292,7 +339,8 @@ class ReportView(APIView):
 
         report = {
             "overallscore": overallscore,
-            "messages": response
+            "messages": response,
+            "subdomain_scores": subdomain_scores
         }
         return Response(ReportSerializer(report).data, status=status.HTTP_200_OK)
 

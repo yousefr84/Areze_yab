@@ -28,7 +28,7 @@ class CompanySerializer(serializers.ModelSerializer):
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['name', 'text']
+        fields = ['name', 'text','description']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -37,7 +37,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['name', 'text', 'size', 'question_type', 'options']
+        fields = ['name', 'text', 'size', 'question_type', 'options','link']
 
     def get_options(self, obj):
         if obj.question_type == QuestionType.MULTIPLE_CHOICE:
@@ -47,7 +47,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:
         model = Domain
-        fields = ['name']
+        fields = ['name','icon']
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -61,7 +61,8 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 
 class ReportSerializer(serializers.Serializer):
-    overallscore = serializers.FloatField()
+    overallscore = serializers.FloatField(allow_null=True)
+    subdomain_scores = serializers.DictField(child=serializers.FloatField(allow_null=True))
     messages = serializers.CharField()
 
 

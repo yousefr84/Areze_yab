@@ -18,7 +18,6 @@ class QuestionType(models.TextChoices):
 
 class CustomUser(AbstractUser):
     is_company = models.BooleanField(default=False)
-    password = models.CharField(max_length=128)
     email = models.CharField(max_length=150, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     username = models.CharField(max_length=11, blank=True, null=True, unique=True)
@@ -88,7 +87,7 @@ class Option(models.Model):
     name = models.CharField(max_length=50)  # e.g., a1_q1_s1_d1
     text = models.TextField()  # Option text
     value = models.PositiveSmallIntegerField(default=0)  # Option number (1, 2, 3, 4)
-    descriptions = models.TextField()
+    description = models.TextField()
 
     class Meta:
         unique_together = ('question', 'value')
