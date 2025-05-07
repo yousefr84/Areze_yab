@@ -12,9 +12,11 @@ class Size(models.TextChoices):
     MEDIUM = 'MEDIUM', 'Medium'
     LARGE = 'LARGE', 'Large'
 
+
 class QuestionType(models.TextChoices):
     MULTIPLE_CHOICE = 'MC', 'Multiple Choice'
     OPEN_ENDED = 'OE', 'Open Ended'
+
 
 class CustomUser(AbstractUser):
     is_company = models.BooleanField(default=False)
@@ -49,6 +51,9 @@ class Company(models.Model):
     company_domain = models.CharField(max_length=100)
     is_company = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Domain(models.Model):
     name = models.CharField(max_length=100, unique=True)  # e.g., d1, d2, d3
@@ -71,7 +76,7 @@ class Question(models.Model):
     name = models.CharField(max_length=50, unique=True)  # e.g., q1_s1_d1
     text = models.TextField()  # Question text
     size = models.CharField(max_length=10, choices=Size.choices)
-    link = models.URLField()
+    link = models.URLField(blank=True, null=True)
     question_type = models.CharField(
         max_length=2,
         choices=QuestionType.choices,

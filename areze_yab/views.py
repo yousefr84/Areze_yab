@@ -77,8 +77,7 @@ class RegisterAPIView(APIView):
                 company.user.add(user)  # فرض می‌کنیم مدل Company فیلد user دارد
                 company.save()
 
-                company_serializer = CompanySerializer(company)
-                return Response(company_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(user_serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
                 return Response({'error': f'خطا در ایجاد شرکت: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
@@ -235,10 +234,11 @@ class SubmitAnswerView(APIView):
 
 class ReportView(APIView):
     def openAI(self, prompt, rule):
-        client = openai.OpenAI(api_key='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')
+        client = openai.OpenAI(api_key='')
         try:
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4",
+                temperature=0.3,
                 messages=[
                     {"role": "system", "content": rule},
                     {"role": "user", "content": prompt}
@@ -310,9 +310,11 @@ class ReportView(APIView):
               برای هر شاخص ، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن شاخص به گونه ای که برای صاحب کسب و کار که سطح آشنایی اولیه در حوزه مدیریت مالی دارد، به صورت ساده ارائه بده
             یک بخش از گزارش که با بعد از توضیحات مقدماتی و قبل از تحلیل ها باشد را به محاسبات دوپونت اختصاص بده
 
-
             '''
             rule = "تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی"
+
+
+
         else:
 
             prompt = f'''
@@ -338,7 +340,7 @@ class ReportView(APIView):
             return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         report = {
-            "overallscore": overallscore,
+            "overallScore": overallscore,
             "messages": response,
             "subdomain_scores": subdomain_scores
         }
