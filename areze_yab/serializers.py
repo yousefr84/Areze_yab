@@ -25,91 +25,76 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SalesAndMarketingSSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ['name', 'text','description']
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+    options = serializers.SerializerMethodField()
+    question_type = serializers.CharField()
 
     class Meta:
-        model = SalesAndMarketingS
-        fields = '__all__'
+        model = Question
+        fields = ['name', 'text', 'size', 'question_type', 'options','link']
+
+    def get_options(self, obj):
+        if obj.question_type == QuestionType.MULTIPLE_CHOICE:
+            return OptionSerializer(obj.options.all(), many=True).data
+        return []
+
+class DomainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Domain
+        fields = ['name','icon']
 
 
-class SalesAndMarketingMSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
+class AnswerSerializer(serializers.ModelSerializer):
+    question = QuestionSerializer()
+    option = OptionSerializer(allow_null=True)
+    text_answer = serializers.CharField(allow_null=True, allow_blank=True)
 
     class Meta:
-        model = SalesAndMarketingM
-        fields = '__all__'
+        model = Answer
+        fields = ['question', 'option', 'text_answer']
 
 
-class SalesAndMarketingLSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = SalesAndMarketingL
-        fields = '__all__'
+class ReportSerializer(serializers.Serializer):
+    overallscore = serializers.FloatField(allow_null=True)
+    subdomain_scores = serializers.DictField(child=serializers.FloatField(allow_null=True))
+    messages = serializers.CharField()
 
 
-class HumanResourcesSSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
+class QuestionnaireStatusSerializer(serializers.ModelSerializer):
+    next_question = serializers.SerializerMethodField()
 
     class Meta:
-        model = HumanResourcesS
-        fields = '__all__'
+        model = Questionnaire
+        fields = ['id', 'is_completed', 'next_question']
+
+    def get_next_question(self, obj):
+        unanswered = obj.answers.order_by('question__id').last()
+        if not unanswered:
+            return QuestionSerializer(
+                Question.objects.filter(
+                    subdomain__domain=obj.domain,
+                    size=obj.company.size
+                ).order_by('id').first()
+            ).data
+        next_question = Question.objects.filter(
+            subdomain__domain=obj.domain,
+            size=obj.company.size,
+            id__gt=unanswered.question.id
+        ).order_by('id').first()
+        return QuestionSerializer(next_question).data if next_question else None
 
 
-class HumanResourcesMSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
 
-    class Meta:
-        model = HumanResourcesM
-        fields = '__all__'
-
-
-class HumanResourcesLSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = HumanResourcesL
-        fields = '__all__'
-
-
-class BrandingSSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = BrandingS
-        fields = '__all__'
-
-
-class BrandingMSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
+class QuestionnaireSerializer(serializers.ModelSerializer):
+    company = serializers.StringRelatedField()
+    domain = serializers.StringRelatedField()
 
     class Meta:
-        model = BrandingM
-        fields = '__all__'
-
-
-class BrandingLSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = BrandingL
-        fields = '__all__'
-
-
-class FinancialSerializer(serializers.ModelSerializer):
-    Company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Financial
-        fields = '__all__'
+        model = Questionnaire
+        fields = ['id', 'company', 'domain', 'created_at', 'is_completed']

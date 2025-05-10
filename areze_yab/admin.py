@@ -1,20 +1,12 @@
 from django.contrib import admin
+from httpx import options
+
 from .models import *
 
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'nationalID')
-
-
-@admin.register(SalesAndMarketingS)
-class SalesAndMarketingAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
-
-
-@admin.register(HumanResourcesS)
-class HumanResourcesAdmin(admin.ModelAdmin):
-    list_display = ('company','date')
 
 
 
@@ -29,4 +21,23 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'username', 'is_company')
     inlines = [CompanyInline]
 
+@admin.register(Questionnaire)
+class QuestionnaireAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company')
 
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'questionnaire_id')
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'subdomain_id')
+@admin.register(Option)
+class OptionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'question_id')
+@admin.register(SubDomain)
+class SubDomainAdmin(admin.ModelAdmin):
+    list_display = ('id', 'domain_id')
+@admin.register(Domain)
+class DomainAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
