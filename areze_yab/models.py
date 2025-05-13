@@ -77,6 +77,8 @@ class Question(models.Model):
     text = models.TextField()  # Question text
     size = models.CharField(max_length=10, choices=Size.choices)
     link = models.URLField(blank=True, null=True)
+    num_of_question = models.IntegerField()
+    all_questions = models.IntegerField()
     question_type = models.CharField(
         max_length=2,
         choices=QuestionType.choices,
