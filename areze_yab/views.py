@@ -35,7 +35,7 @@ class RegisterAPIView(APIView):
             return Response({'error': 'رمز عبور و تکرار آن با هم برابر نیست'}, status=status.HTTP_400_BAD_REQUEST)
 
         # تبدیل is_company به بولین
-        is_company = str(is_company).lower() == 'true'
+        is_company = str(is_company).lower()
 
         # ایجاد کاربر
         try:
@@ -159,10 +159,9 @@ class StartQuestionnaireView(APIView):
             size=size,
         ).order_by('id')
         first_question = questions.first()
-        number_of_questions = questions.count()
         if not first_question:
             return Response({"error": "No questions available"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(data={"number_of_questions": number_of_questions, "questionnaire": questionnaire.id,
+        return Response(data={"questionnaire": questionnaire.id,
                               "question": QuestionSerializer(first_question).data}, status=status.HTTP_200_OK)
 
 
@@ -277,67 +276,53 @@ class ReportView(APIView):
         # محاسبه میانگین برای هر زیرحوزه
         subdomain_scores = {}
         messages = []
+        response=''
         for subdomain in questionnaire.domain.subdomains.all():
             subdomain_answers = answers.filter(question__subdomain=subdomain)
             if subdomain_answers:
                 # پیام‌ها برای OpenAI
-                messages.append(f"کاربر در زیرحوزه {subdomain.name} پاسخ‌های زیر را ارائه کرده است:")
+                # پیام‌ها برای OpenAI
+                subdomain_name=subdomain.name
+                company_domain = questionnaire.company.company_domain
+                company_size = questionnaire.company.size
+
+                messages.append(f"کاربر در زیرحوزه {subdomain_name} پاسخ‌های زیر را ارائه کرده است:")
                 for answer in subdomain_answers:
                     if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
-                        messages.append(f"{answer.question.name}: {answer.option.text} (امتیاز: {answer.option.value})")
+                        messages.append(
+                            f"{answer.question.name}: {answer.option.text} (توضیح: {answer.option.description})")
                     else:  # OPEN_ENDED
                         messages.append(f"{answer.question.name}: {answer.text_answer}")
 
-                # محاسبه میانگین برای پاسخ‌های چهارگزینه‌ای زیرحوزه
-                subdomain_mc_answers = subdomain_answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
-                if subdomain_mc_answers.exists():
-                    subdomain_score = sum(
-                        answer.option.value for answer in subdomain_mc_answers) / subdomain_mc_answers.count()
-                    subdomain_scores[subdomain.name] = round(subdomain_score, 2)
-                else:
-                    subdomain_scores[subdomain.name] = None
+                prompt = f'''
+                                   تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain.name} قصد داری {questionnaire.domain.name} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی. برای این کار پرسشنامه عارضه یابی {questionnaire.domain.name} در اختیار تو است. این پرسشنامه شامل حوزه {subdomain.name} است که در {questionnaire.domain.name} شرکت تأثیر گذارند.:
+                   در گزارش عارضه‌یابی باید حوزه    {subdomain.name} به صورت مجزا تحلیل شود و توضیحات در دو پاراگراف و 150 کلمه ارائه شود                
+                                   همچنین  3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد حوزه {subdomain.name} به گونه ای که برای صاحب کسب و کار با آشنایی اولیه در حوزه {questionnaire.domain} و به صورت ساده ارائه بده و برای هر پیشنهاد به صورت جداگانه  یک مثال عملیاتی و اجرایی در یک پاراگراف جدا که با کلمه "به طور مثال" شروع میشود بزن.
+                   فرمت گزارش باید به شکل مثال زیر باشد:               
+                                   مثال:
+                   حوزه :               {subdomain}
+                   *تحلیل                      {subdomain}در 150 کلمه و 2 پاراگراف*
+                                       *پیشنهاد اول: (توضیح پیشنهاد بهبود)*
+                                       به طور مثال: (توضیح مثال عملیاتی)*
+                   *پیشنهاد دوم: (توضیح پیشنهاد بهبود)*                    
+                                   *به طور مثال: (توضیح مثال عملیاتی)*
+                                       *پیشنهاد سوم: (توضیح پیشنهاد بهبود)*
+                   *به طور مثال: (توضیح مثال عملیاتی)*                 
+                             *پیشنهاد چهارم: (توضیح پیشنهاد بهبود)*
+                   *به طور مثال: (توضیح مثال عملیاتی)*             
+                               *پیشنهاد پنجم: (توضیح پیشنهاد بهبود)*
+                                       *به طور مثال: (توضیح مثال عملیاتی)*
+                   در تحلیل حوزه                        {subdomain} و ارائه راهکارهای پیشنهادی بهبود به نکته زیر توجه کن:
+                   این عارضه یابی مخصوص یک شرکت با مقیاس {questionnaire.company.size} است که در صنعت {questionnaire.company.company_domain} فعالیت میکند و تحلیل ها و راهکارهای خود را متناسب با چنین شرکتی ارائه بده           
 
-        if questionnaire.domain.name == 'Financial':
-            prompt = f'''
-            تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی. اطلاعات مالی به شرح زیر است:
-                        {chr(10).join(messages)}
+                                   پرسشنامه عارضه یابی به همراه جواب هایی که بایدآن ها را تحلیل کنی به شرح زیر است
+                                   {'\n'.join(messages)}
+                                   '''
+                rule = f'''
+                           .تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی
+                                   '''
 
-            با توجه به این اطلاعات، تحلیل دوپونت را ارائه بده.
-            در ابتدای گزارش تحلیلی خود، در 4 پارگراف و حداقل 300 کلمه در باره ی ضرورت تحلیل صورت های مالی، توضیح مدل دوپونت و استفاده از این مدل برای تحلیل اطلاعات وارد شده توضیح بده.
-
-            هر یک از شاخص های حاشیه سود خالص، گردش دارایی ها و اهرم مالی را به صورت منحصر به فرد در 2 پاراگراف و 120 کلمه تحلیل کن
-             همچنین برای تاثیرگذاری بهتر تحلیل در تصمیم گیری ها، راهکارهایی برای بهبود نسبت هایی که محاسبه کردی ارائه بده . فرمت ارائه راهکارها به شکل زیر باشد:
-              برای هر شاخص ، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن شاخص به گونه ای که برای صاحب کسب و کار که سطح آشنایی اولیه در حوزه مدیریت مالی دارد، به صورت ساده ارائه بده
-            یک بخش از گزارش که با بعد از توضیحات مقدماتی و قبل از تحلیل ها باشد را به محاسبات دوپونت اختصاص بده
-
-            '''
-            rule = "تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی"
-
-
-
-        else:
-
-            prompt = f'''
-                    تصور کن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را عارضه یابی کنی. برای این کار پرسشنامه عارضه یابی {questionnaire.domain} در اختیار تو است. این پرسشنامه از حوزه های مختلف تشکیل شده و هر حوزه سوالات مربوط به خود که نشان دهنده ی شاخص های عملکردی حوزه {questionnaire.domain} است را   شامل می‌شود. هر حوزه را با توجه به پاسخ های داده شده ی مربوط به آن در 120 کلمه و 2 پاراگراف تحلیل کن. این تحلیل باید شامل گزارشی از وضعیت فعلی حوزه {questionnaire.domain}، نقاط قوت و ضعف و فرصت‌های بهبود باشد.  
-            همچنین برای هر حوزه، 3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد آن حوزه به گونه ای که برای صاحب کسب و کار با آشنایی اولیه در حوزه {questionnaire.domain} و به صورت ساده ارائه بده و برای هر پیشنهاد به صورت 
-            جداگانه  یک مثال عملیاتی و اجرایی در یک پاراگراف جدا که با کلمه "به طور مثال" شروع میشود بزن.
-            مثال:
-            پیشنهادات بهبود:
-            راه‌اندازی برنامه‌های ارجاع برای تشویق مشتریان وفادار به معرفی برند.
-            به طور مثال: (مثال عملیاتی)
-            برای هر حوزه از این مثال سمپل استفاده کن.
-             برای تاثیر بیشتر در عملکرد شرکت، دلیل پیشنهاد ارائه شده و لزوم اجرای آن را به صورت دقیق توضیح بده.        
-            پرسشنامه عارضه یابی {questionnaire.domain} به شرح زیر است:
-            {chr(10).join(messages)}
-            با توجه به پاسخ‌ها، در ابتدای گزارش عارضه یابی عملکرد شرکت را در حوزه {questionnaire.domain} که در سطح {questionnaire.company.size} قرار دارد را با در نظر گرفتن همه ی حوزه‌ها تحلیل کن و توضیحات را در 300 کلمه و 3 پاراگراف ارائه بده. در نظر داشته باش که این شرکت در زمینه {questionnaire.company.company_domain} فعالیت میکند. در تحلیل ها و راهکارهای پیشنهادی خود، زمینه {questionnaire.company.company_domain} را در نظر داشته باش.
-            متنی از خودت اضافه نکن و فقط گزارش را ارائه بده.
-                    '''
-            rule = f' تصور کن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را عارضه یابی کنی'
-
-        try:
-            response = self.openAI(prompt=prompt, rule=rule)
-        except Exception as e:
-            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                response += self.openAI(prompt, rule)
 
         report = {
             "overallScore": overallscore,
@@ -349,9 +334,15 @@ class ReportView(APIView):
 
 class QuestionnairesView(APIView):
     def get(self, request):
-        nationalId = request.query_params.get('nationalID')
-        company = Company.objects.get(nationalID=nationalId)
-        questionnaires = Questionnaire.objects.filter(company=company)
+        is_company = request.query_params.get('is_company')
+        if bool(is_company):
+            nationalId = request.query_params.get('nationalID')
+            companies = Company.objects.get(nationalID=nationalId)
+        else:
+            username = request.query_params.get('username')
+            companies = Company.objects.filter(username=username)
+        for company in companies:
+            questionnaires = Questionnaire.objects.filter(company=company)
         serializer = QuestionnaireSerializer(questionnaires, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
