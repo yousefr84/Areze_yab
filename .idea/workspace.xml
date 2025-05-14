@@ -7,14 +7,9 @@
     <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Areze_yab.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/migrations/0002_answer_text_answer_domain_icon_option_descriptions_and_more.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/etgohuir.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +58,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;27c17e5c&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;5df9ba62&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/yousef/Downloads/Telegram Desktop/Areze_yab&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -152,6 +147,8 @@
       <workItem from="1747042364584" duration="12000" />
       <workItem from="1747047386855" duration="824000" />
       <workItem from="1747112741785" duration="2175000" />
+      <workItem from="1747137899546" duration="975000" />
+      <workItem from="1747204174548" duration="3888000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -241,7 +238,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746885502203</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="dibug">
+      <option name="closed" value="true" />
+      <created>1747138164075</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1747138164075</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
