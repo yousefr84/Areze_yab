@@ -22,9 +22,9 @@ SECRET_KEY = 'django-insecure-to8qfil2(pa=01^_gm=!2ft#$))agha0ado^_kt_m#rn#4=d++
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 # Application definition
 
