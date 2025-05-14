@@ -128,11 +128,15 @@ class CompanyAPIView(APIView):
             return Response(data={"error": "Company is required"}, status=status.HTTP_400_BAD_REQUEST)
         user = CustomUser.objects.get(id=userid)
         if not user.is_company:
-            company = Company.objects.create(name=name, company_domain=company_domain,
+            try:
+                company = Company.objects.get(nationalID=nationalID)
+            except:
+                company = Company.objects.create(name=name, company_domain=company_domain,
                                              registrationNumber=registrationNumber, nationalID=nationalID, size=size)
-            company.user.add(user)
+                company.user.add(user)
             serializer = CompanySerializer(company)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class DomainsAPIView(APIView):
@@ -290,7 +294,7 @@ class ReportView(APIView):
                 for answer in subdomain_answers:
                     if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
                         messages.append(
-                            f"{answer.question.name}: {answer.option.text} (توضیح: {answer.option.description})")
+                            f"{answer.question.name}: {answer.option.text}  ")
                     else:  # OPEN_ENDED
                         messages.append(f"{answer.question.name}: {answer.text_answer}")
 
@@ -334,17 +338,59 @@ class ReportView(APIView):
 
 class QuestionnairesView(APIView):
     def get(self, request):
+        # Extract query parameters
         is_company = request.query_params.get('is_company')
-        if bool(is_company):
-            nationalId = request.query_params.get('nationalID')
-            companies = Company.objects.get(nationalID=nationalId)
-        else:
-            username = request.query_params.get('username')
-            companies = Company.objects.filter(username=username)
-        for company in companies:
-            questionnaires = Questionnaire.objects.filter(company=company)
-        serializer = QuestionnaireSerializer(questionnaires, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        national_id = request.query_params.get('nationalID')
+        username = request.query_params.get('username')
+
+        # Validate required query parameters
+        if is_company is None:
+            return Response(
+                {"error": "Missing 'is_company' query parameter"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Convert is_company to boolean (assuming 'true'/'false' as strings)
+        is_company = is_company.lower()
+
+        try:
+            if is_company == 'true':
+                # Validate nationalID is provided
+                if not national_id:
+                    return Response(
+                        {"error": "Missing 'nationalID' query parameter"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                # Get company by nationalID (single object)
+                company = Company.objects.get(nationalID=national_id)
+                # Filter questionnaires for this company
+                questionnaires = Questionnaire.objects.filter(company=company)
+            else:
+                # Validate username is provided
+                if not username:
+                    return Response(
+                        {"error": "Missing 'username' query parameter"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                # Get companies by username (queryset)
+                companies = Company.objects.filter(username=username)
+                # Aggregate questionnaires for all matching companies
+                questionnaires = Questionnaire.objects.filter(company__in=companies)
+
+            # Serialize the questionnaires
+            serializer = QuestionnaireSerializer(questionnaires, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": "No matching company found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class QuestionnaireStatusView(APIView):
