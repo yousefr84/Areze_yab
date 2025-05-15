@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -147,6 +145,7 @@
       <workItem from="1747204174548" duration="3888000" />
       <workItem from="1747235232094" duration="1303000" />
       <workItem from="1747251868995" duration="90000" />
+      <workItem from="1747296120406" duration="379000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -260,7 +259,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747235923660</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="dibug">
+      <option name="closed" value="true" />
+      <created>1747296498213</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1747296498213</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
