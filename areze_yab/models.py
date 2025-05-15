@@ -45,8 +45,8 @@ class CustomUser(AbstractUser):
 class Company(models.Model):
     user = models.ManyToManyField(CustomUser)
     name = models.CharField(max_length=100)
-    registrationNumber = models.CharField(max_length=100,unique=True)
-    nationalID = models.CharField(max_length=100,unique=True)
+    registrationNumber = models.CharField(max_length=100, unique=True)
+    nationalID = models.CharField(max_length=100, unique=True)
     size = models.CharField(max_length=10, choices=Size.choices)
     company_domain = models.CharField(max_length=100)
     is_company = models.BooleanField(default=True)
