@@ -35,10 +35,13 @@ class RegisterAPIView(APIView):
             return Response({'error': 'رمز عبور و تکرار آن با هم برابر نیست'}, status=status.HTTP_400_BAD_REQUEST)
 
         # تبدیل is_company به بولین
-        is_company = str(is_company).lower()
 
         # ایجاد کاربر
+
         try:
+            if CustomUser.objects.filter(username=username).exists():
+                return Response({'error': 'نام کاربری قبلاً استفاده شده است'}, status=status.HTTP_400_BAD_REQUEST)
+
             user = CustomUser.objects.create_user(
                 username=username,
                 password=password,
@@ -52,20 +55,20 @@ class RegisterAPIView(APIView):
             return Response({'error': f'خطا در ایجاد کاربر: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # اگر کاربر شرکت است، شرکت را ایجاد کن
-        if is_company:
+        is_company = str(is_company).lower()
+
+        if is_company == 'true':
             try:
                 company_domain = data.get('company_domain')
                 registration_number = data.get('registrationNumber')
                 size = data.get('size')
                 national_id = username  # استفاده از username به‌عنوان nationalID
-
                 if not company_domain:
                     return Response({'error': 'company_domain is missing'}, status=status.HTTP_400_BAD_REQUEST)
                 if not registration_number:
                     return Response({'error': 'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
                 if not size:
                     return Response({'error': 'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
-
                 company = Company.objects.create(
                     company_domain=company_domain,
                     name=name,
@@ -73,11 +76,11 @@ class RegisterAPIView(APIView):
                     nationalID=national_id,
                     size=size
                 )
+
                 # افزودن کاربر به شرکت
                 company.user.add(user)  # فرض می‌کنیم مدل Company فیلد user دارد
                 company.save()
 
-                return Response(user_serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
                 return Response({'error': f'خطا در ایجاد شرکت: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
@@ -132,11 +135,11 @@ class CompanyAPIView(APIView):
                 company = Company.objects.get(nationalID=nationalID)
             except:
                 company = Company.objects.create(name=name, company_domain=company_domain,
-                                             registrationNumber=registrationNumber, nationalID=nationalID, size=size)
+                                                 registrationNumber=registrationNumber, nationalID=nationalID,
+                                                 size=size)
                 company.user.add(user)
             serializer = CompanySerializer(company)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class DomainsAPIView(APIView):
@@ -280,13 +283,13 @@ class ReportView(APIView):
         # محاسبه میانگین برای هر زیرحوزه
         subdomain_scores = {}
         messages = []
-        response=''
+        response = ''
         for subdomain in questionnaire.domain.subdomains.all():
             subdomain_answers = answers.filter(question__subdomain=subdomain)
             if subdomain_answers:
                 # پیام‌ها برای OpenAI
                 # پیام‌ها برای OpenAI
-                subdomain_name=subdomain.name
+                subdomain_name = subdomain.name
                 company_domain = questionnaire.company.company_domain
                 company_size = questionnaire.company.size
 
