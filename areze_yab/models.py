@@ -107,6 +107,7 @@ class Questionnaire(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='questionnaires')
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    report = models.JSONField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
 
     def __str__(self):
@@ -141,3 +142,16 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer to {self.question} in {self.questionnaire}"
+
+
+class Report(models.Model):
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='reports')
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('done', 'Done'),
+        ('error', 'Error'),
+    ]
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
+    result = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

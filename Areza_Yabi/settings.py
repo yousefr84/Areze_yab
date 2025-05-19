@@ -92,7 +92,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Areza_Yabi.wsgi.application'
+# WSGI_APPLICATION = 'Areza_Yabi.wsgi.application'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -115,6 +115,15 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
+
+# Redis به‌عنوان message broker و result backend
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# فرمت داده‌ها
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

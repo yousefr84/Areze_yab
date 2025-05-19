@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug" />
+    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug">
+      <change afterPath="$PROJECT_DIR$/Areza_Yabi/celery.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/areze_yab/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Areza_Yabi/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Areza_Yabi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,8 +27,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -52,7 +63,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;bcddaf01&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;3ed69e67&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/yousef/Downloads/Telegram Desktop/Areze_yab&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -145,7 +156,16 @@
       <workItem from="1747204174548" duration="3888000" />
       <workItem from="1747235232094" duration="1303000" />
       <workItem from="1747251868995" duration="90000" />
-      <workItem from="1747296120406" duration="379000" />
+      <workItem from="1747296120406" duration="12851000" />
+      <workItem from="1747395019982" duration="2243000" />
+      <workItem from="1747397270098" duration="2384000" />
+      <workItem from="1747422500882" duration="2964000" />
+      <workItem from="1747457393163" duration="3399000" />
+      <workItem from="1747462560495" duration="368000" />
+      <workItem from="1747544403644" duration="10147000" />
+      <workItem from="1747556181412" duration="211000" />
+      <workItem from="1747631326170" duration="4274000" />
+      <workItem from="1747635807958" duration="8501000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -267,7 +287,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747296498213</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="dibug">
+      <option name="closed" value="true" />
+      <created>1747299611183</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1747299611183</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
