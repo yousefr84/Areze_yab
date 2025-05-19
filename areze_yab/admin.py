@@ -31,10 +31,10 @@ class AnswerAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'subdomain_id')
+    list_display = ('name','id', 'subdomain_id')
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question_id')
+    list_display = ('name','id', 'question_id')
 @admin.register(SubDomain)
 class SubDomainAdmin(admin.ModelAdmin):
     list_display = ('id', 'domain_id')

@@ -1,12 +1,18 @@
 import openai
+from asgiref.sync import sync_to_async, async_to_sync
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from openai import AsyncOpenAI
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from areze_yab.serializers import *
 from django.core.exceptions import ObjectDoesNotExist
+import logging
+from celery.result import AsyncResult
+from .tasks import report as report_task
+from areze_yab.models import *
 
 
 class RegisterAPIView(APIView):
@@ -80,6 +86,7 @@ class RegisterAPIView(APIView):
                 # افزودن کاربر به شرکت
                 company.user.add(user)  # فرض می‌کنیم مدل Company فیلد user دارد
                 company.save()
+                print(f"size of company: {company.size}")
 
             except IntegrityError as e:
                 return Response({'error': f'خطا در ایجاد شرکت: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -124,20 +131,41 @@ class CompanyAPIView(APIView):
         nationalID = company_data['nationalID']
         size = company_data['size'],
         company_domain = company_data['company_domain']
-
+        print(f"size: {size}")
+        print(f"nationalID: {nationalID}")
+        print(f"registrationNumber: {registrationNumber}")
         if not userid:
             return Response(data={'user id missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not company_data:
             return Response(data={"error": "Company is required"}, status=status.HTTP_400_BAD_REQUEST)
         user = CustomUser.objects.get(id=userid)
+        if not size:
+            return Response(data={'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        if not registrationNumber:
+            return Response(data={'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        if not nationalID:
+            return Response(data={'nationalID is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        if not company_domain:
+            return Response(data={'company_domain is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not user.is_company:
             try:
                 company = Company.objects.get(nationalID=nationalID)
             except:
-                company = Company.objects.create(name=name, company_domain=company_domain,
-                                                 registrationNumber=registrationNumber, nationalID=nationalID,
-                                                 size=size)
-                company.user.add(user)
+                company = Company.objects.create(
+                    company_domain=company_domain,
+                    name=name,
+                    registrationNumber=registrationNumber,
+                    nationalID=nationalID,
+                    size=size
+                )
+                print(f'company: {company}')
+                print(f'size of company: {company.size}')
+                # افزودن کاربر به شرکت
+                company.user.add(user)  # فرض می‌کنیم مدل Company فیلد user دارد
+                company.save()
+                print(f'company: {company}')
+                print(f'size of company: {company.size}')
             serializer = CompanySerializer(company)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -238,123 +266,198 @@ class SubmitAnswerView(APIView):
         return Response(data={'question': QuestionSerializer(next_question).data}, status=status.HTTP_200_OK)
 
 
-class ReportView(APIView):
-    def openAI(self, prompt, rule):
-        client = openai.OpenAI(api_key='')
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4",
-                temperature=0.3,
-                messages=[
-                    {"role": "system", "content": rule},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            raise Exception("Failed to generate report from OpenAI")
+logger = logging.getLogger(__name__)
 
-    def get(self, request, questionnaire_id):
-        national_id = request.query_params.get('nationalID')
+
+# class ReportView(APIView):
+#     def openAI(self, prompt, rule):
+#         print('i going too send request to openAI')
+#         client = openai.OpenAI(api_key='')
+#         try:
+#             response = client.chat.completions.create(
+#                 model="gpt-4",
+#                 temperature=0.3,
+#                 messages=[
+#                     {"role": "system", "content": rule},
+#                     {"role": "user", "content": prompt}
+#                 ]
+#             )
+#             print("i got the response")
+#             return response.choices[0].message.content
+#         except Exception as e:
+#             raise Exception("Failed to generate report from OpenAI")
+#
+#     def get(self, request, questionnaire_id):
+#         national_id = request.query_params.get('nationalID')
+#         if not national_id:
+#             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         # پیدا کردن شرکت
+#         try:
+#             company = Company.objects.get(nationalID=national_id)
+#         except ObjectDoesNotExist:
+#             return Response(data={'error': 'Company with this nationalID does not exist'},
+#                             status=status.HTTP_404_NOT_FOUND)
+#
+#         # پیدا کردن پرسشنامه
+#         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
+#         answers = questionnaire.answers.all()
+#
+#         if not answers:
+#             return Response({"error": "No answers provided"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         # محاسبه میانگین کلی برای پاسخ‌های چهارگزینه‌ای
+#         mc_answers = answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
+#         print(f"mc_answers: {mc_answers}")
+#         overallscore = None
+#         if mc_answers.exists():
+#             overallscore = sum(answer.option.value for answer in mc_answers) / mc_answers.count()
+#             print(f"overallscore: {overallscore}")
+#             overallscore = round(overallscore, 2)
+#             print(f"overallscore: {overallscore}")
+#
+#         # محاسبه میانگین برای هر زیرحوزه
+#         subdomain_scores = {}
+#         messages = []
+#         text_answer = []
+#         subdomains_list = []
+#         num =0
+#         response = ''
+#         for subdomain in questionnaire.domain.subdomains.all():
+#             subdomain_answers = answers.filter(question__subdomain=subdomain)
+#             num +=1
+#             subdomains_list.append(subdomain.name)
+#             if subdomain_answers:
+#                 # پیام‌ها برای OpenAI
+#                 # پیام‌ها برای OpenAI
+#                 subdomain_name = subdomain.name
+#                 company_domain = questionnaire.company.company_domain
+#                 company_size = questionnaire.company.size
+#                 domain = questionnaire.domain
+#                 sum_of_answers = 0
+#                 num_of_answers = 0
+#                 print(f'before loop sum_of_answers: {sum_of_answers} and num_of_answers: {num_of_answers}')
+#                 messages.append(f"کاربر در زیرحوزه {subdomain_name} پاسخ‌های زیر را ارائه کرده است:")
+#                 for answer in subdomain_answers:
+#                     if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
+#                         messages.append(
+#                             f"{answer.question.text}: {answer.option.text}  ")
+#                         text_answer.append(
+#                             f"{answer.question.text}: {answer.option.text}  ")
+#                         sum_of_answers += answer.option.value
+#                         print(f"sum_of_answers: {sum_of_answers}")
+#                         num_of_answers += 1
+#                     else:  # OPEN_ENDED
+#                         messages.append(f"{answer.question.name}: {answer.text_answer}")
+#                         text_answer.append(f"{answer.question.name}: {answer.text_answer}")
+#                 subdomain_scores.update({subdomain_name: sum_of_answers / num_of_answers})
+#                 print(f'subdomain_score: {subdomain_scores}')
+#                 if num == 5:
+#                     prompt = f'''
+#                                                    تصورکن به عنوان یک کارشناس در حوزه {domain} قصد داری {domain} یک شرکت با مقیاس {company_size} را که در صنعت {company_domain} فعالیت میکند عارضه یابی کنی. برای این کار پرسشنامه عارضه یابی {domain} در اختیار تو است. این پرسشنامه شامل حوزه های مختلفی است که در {domain} شرکت تأثیر گذارند..
+# با توجه به سوالات و پاسخ های پرسشنامه، یک تحلیل عملکرد کلی از {domain} شرکت ارائه بده. فرمت این گزارش باید به شکل زیر است:
+# برای تحلیل عملکرد {domain} باید راجب موضوعات زیر در 3 پاراگراف و حداقل 300 کلمه توضیح بدی:
+# پاراگراف اول: (اهمیت عارضه یابی {domain} شرکت با توجه به صنعت {company_size})
+# پارگراف دوم: (تحلیل عملکرد {domain} شرکت با توجه به پاسخ های هر حوزه)
+# پاراگراف سوم: (توضیح نقاط قوت و ضعف {domain} شرکت)
+# این توضیحات باید درباره ی حوزه های {domain} که شامل موارد زیر است باشد:
+# حوزه ها: {subdomains_list}
+# گزارش هر اندازه هم که طولانی شد اما به صورت کامل و برای همه حوزه ها، تحلیل ها، توضیحات لازم و پیشنهادات بهود را ارائه بده
+# :پرسشنامه عارضه یابی به همراه جواب هایی که بایدآن ها را تحلیل کنی به شرح زیر است
+#                                                        {'\n'.join(text_answer)}
+#                                                        '''
+#
+#                     rule = f'''
+#                                .تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی
+#                                        '''
+#                     response += 'start this subdomain'
+#                     response += self.openAI(prompt, rule)
+#                     response += 'end this subdomain'
+#
+#                     subdomains_list.clear()
+#                     text_answer.clear()
+#                     num =0
+#
+#         prompt = f'''
+#                 تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی.
+# . برای این کار پرسشنامه عارضه یابی {questionnaire.domain} در اختیار تو است. این پرسشنامه شامل حوزه های مختلفی است که در {questionnaire.domain} شرکت تأثیر گذارند..
+# با توجه به سوالات و پاسخ های پرسشنامه، یک تحلیل عملکرد کلی از {questionnaire.domain} شرکت ارائه بده. فرمت این گزارش باید به شکل زیر است:
+# برای تحلیل عملکرد {questionnaire.domain} باید راجب موضوعات زیر در 3 پاراگراف و حداقل 300 کلمه توضیح بدی:
+# پاراگراف اول: (اهمیت عارضه یابی {questionnaire.domain} شرکت با توجه به صنعت {questionnaire.company.company_domain})
+# پارگراف دوم: (تحلیل عملکرد {questionnaire.domain} شرکت با توجه به پاسخ های هر حوزه)
+# پاراگراف سوم: (توضیح نقاط قوت و ضعف {questionnaire.domain} شرکت)
+# این توضیحات باید درباره ی حوزه های {questionnaire.domain} که شامل موارد زیر است باشد:
+#
+# *گزارش هر اندازه هم که طولانی شد اما به صورت کامل و برای همه حوزه ها، تحلیل ها، توضیحات لازم و پیشنهادات بهود را ارائه بده*
+#     {'\n'.join(messages)}'
+#
+# '''
+#
+#         rule = f'''
+#         تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی.
+# '''
+#         response += 'start first'
+#         response += self.openAI(prompt, rule)
+#         response += 'end first'
+#         print(f"overallscore: {overallscore}")
+#         report = {
+#             "overallScore": overallscore,
+#             "messages": response,
+#             "subdomain_scores": subdomain_scores
+#         }
+#         print("report going to save")
+#         questionnaire.report = report
+#         print("its saved")
+#         return Response(ReportSerializer(report).data, status=status.HTTP_200_OK)
+
+
+class StartReportView(APIView):
+    def post(self, request):
+        questionnaire_id = request.data.get('questionnaire_id')
+        national_id = request.data.get('national_id')
         if not national_id:
             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # پیدا کردن شرکت
+        if not questionnaire_id:
+            return Response(data={'error': 'questionnaireID missing'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            company = Company.objects.get(nationalID=national_id)
-        except ObjectDoesNotExist:
-            return Response(data={'error': 'Company with this nationalID does not exist'},
-                            status=status.HTTP_404_NOT_FOUND)
+            questionnaire = Questionnaire.objects.get(id=questionnaire_id)
+        except Questionnaire.DoesNotExist:
+            return Response({'error': 'Questionnaire not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # پیدا کردن پرسشنامه
-        questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
-        answers = questionnaire.answers.all()
+        # ساختن Report جدید
+        report = Report.objects.create(
+            questionnaire=questionnaire,
+            status='pending'
+        )
+        print("object created")
 
-        if not answers:
-            return Response({"error": "No answers provided"}, status=status.HTTP_400_BAD_REQUEST)
+        # اجرای تسک celery
+        report_task.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
+        print("task started")
 
-        # محاسبه میانگین کلی برای پاسخ‌های چهارگزینه‌ای
-        mc_answers = answers.filter(question__question_type=QuestionType.MULTIPLE_CHOICE)
-        overallscore = None
-        if mc_answers.exists():
-            overallscore = sum(answer.option.value for answer in mc_answers) / mc_answers.count()
-            overallscore = round(overallscore, 2)
+        return Response({'report_id': report.id, 'status': 'pending'}, status=status.HTTP_202_ACCEPTED)
 
-        # محاسبه میانگین برای هر زیرحوزه
-        subdomain_scores = {}
-        messages = []
-        response = ''
-        for subdomain in questionnaire.domain.subdomains.all():
-            subdomain_answers = answers.filter(question__subdomain=subdomain)
-            if subdomain_answers:
-                # پیام‌ها برای OpenAI
-                # پیام‌ها برای OpenAI
-                subdomain_name = subdomain.name
-                company_domain = questionnaire.company.company_domain
-                company_size = questionnaire.company.size
 
-                messages.append(f"کاربر در زیرحوزه {subdomain_name} پاسخ‌های زیر را ارائه کرده است:")
-                for answer in subdomain_answers:
-                    if answer.question.question_type == QuestionType.MULTIPLE_CHOICE:
-                        messages.append(
-                            f"{answer.question.name}: {answer.option.text}  ")
-                    else:  # OPEN_ENDED
-                        messages.append(f"{answer.question.name}: {answer.text_answer}")
+class GetReportAPIView(APIView):
+    def get(self, request, report_id):
+        report = get_object_or_404(Report, id=report_id)
 
-                prompt = f'''
-                                   تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain.name} قصد داری {questionnaire.domain.name} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی. برای این کار پرسشنامه عارضه یابی {questionnaire.domain.name} در اختیار تو است. این پرسشنامه شامل حوزه {subdomain.name} است که در {questionnaire.domain.name} شرکت تأثیر گذارند.:
-                   در گزارش عارضه‌یابی باید حوزه    {subdomain.name} به صورت مجزا تحلیل شود و توضیحات در دو پاراگراف و 150 کلمه ارائه شود                
-                                   همچنین  3 تا 5 پیشنهاد منحصر به فرد برای بهبود عملکرد حوزه {subdomain.name} به گونه ای که برای صاحب کسب و کار با آشنایی اولیه در حوزه {questionnaire.domain} و به صورت ساده ارائه بده و برای هر پیشنهاد به صورت جداگانه  یک مثال عملیاتی و اجرایی در یک پاراگراف جدا که با کلمه "به طور مثال" شروع میشود بزن.
-                   فرمت گزارش باید به شکل مثال زیر باشد:               
-                                   مثال:
-                   حوزه :               {subdomain}
-                   *تحلیل                      {subdomain}در 150 کلمه و 2 پاراگراف*
-                                       *پیشنهاد اول: (توضیح پیشنهاد بهبود)*
-                                       به طور مثال: (توضیح مثال عملیاتی)*
-                   *پیشنهاد دوم: (توضیح پیشنهاد بهبود)*                    
-                                   *به طور مثال: (توضیح مثال عملیاتی)*
-                                       *پیشنهاد سوم: (توضیح پیشنهاد بهبود)*
-                   *به طور مثال: (توضیح مثال عملیاتی)*                 
-                             *پیشنهاد چهارم: (توضیح پیشنهاد بهبود)*
-                   *به طور مثال: (توضیح مثال عملیاتی)*             
-                               *پیشنهاد پنجم: (توضیح پیشنهاد بهبود)*
-                                       *به طور مثال: (توضیح مثال عملیاتی)*
-                   در تحلیل حوزه                        {subdomain} و ارائه راهکارهای پیشنهادی بهبود به نکته زیر توجه کن:
-                   این عارضه یابی مخصوص یک شرکت با مقیاس {questionnaire.company.size} است که در صنعت {questionnaire.company.company_domain} فعالیت میکند و تحلیل ها و راهکارهای خود را متناسب با چنین شرکتی ارائه بده           
-
-                                   پرسشنامه عارضه یابی به همراه جواب هایی که بایدآن ها را تحلیل کنی به شرح زیر است
-                                   {'\n'.join(messages)}
-                                   '''
-                rule = f'''
-                           .تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی
-                                   '''
-
-                response += self.openAI(prompt, rule)
-        prompt = f'''
-                تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی.
-. برای این کار پرسشنامه عارضه یابی {questionnaire.domain} در اختیار تو است. این پرسشنامه شامل حوزه های مختلفی است که در {questionnaire.domain} شرکت تأثیر گذارند..
-با توجه به سوالات و پاسخ های پرسشنامه، یک تحلیل عملکرد کلی از {questionnaire.domain} شرکت ارائه بده. فرمت این گزارش باید به شکل زیر است:
-برای تحلیل عملکرد {questionnaire.domain} باید راجب موضوعات زیر در 3 پاراگراف و حداقل 300 کلمه توضیح بدی:
-پاراگراف اول: (اهمیت عارضه یابی {questionnaire.domain} شرکت با توجه به صنعت {questionnaire.company.company_domain})
-پارگراف دوم: (تحلیل عملکرد {questionnaire.domain} شرکت با توجه به پاسخ های هر حوزه)
-پاراگراف سوم: (توضیح نقاط قوت و ضعف {questionnaire.domain} شرکت)
-این توضیحات باید درباره ی حوزه های {questionnaire.domain} که شامل موارد زیر است باشد:
-
-*گزارش هر اندازه هم که طولانی شد اما به صورت کامل و برای همه حوزه ها، تحلیل ها، توضیحات لازم و پیشنهادات بهود را ارائه بده* 
-    {'\n'.join(messages)}'
-
-'''
-
-        rule=f'''
-        تصورکن به عنوان یک کارشناس در حوزه {questionnaire.domain} قصد داری {questionnaire.domain} یک شرکت با مقیاس {questionnaire.company.size} را که در صنعت {questionnaire.company.company_domain} فعالیت میکند عارضه یابی کنی.
-'''
-        response += self.openAI(prompt, rule)
-        report = {
-            "overallScore": overallscore,
-            "messages": response,
-            "subdomain_scores": subdomain_scores
-        }
-        return Response(ReportSerializer(report).data, status=status.HTTP_200_OK)
+        # اگر گزارش هنوز آماده نشده بود
+        if report.status != 'done':
+            return Response({
+                'status': report.status,
+                'message': 'گزارش هنوز کامل نشده است. لطفاً بعداً دوباره امتحان کنید.'
+            }, status=status.HTTP_202_ACCEPTED)
+        if report.status == 'error':
+            return Response({
+                'status': report.status,
+                'message': report.result,
+            })
+        # اگر گزارش آماده بود
+        return Response({
+            'status': report.status,
+            'result': report.result
+        }, status=status.HTTP_200_OK)
 
 
 class QuestionnairesView(APIView):
@@ -370,46 +473,57 @@ class QuestionnairesView(APIView):
                 {"error": "Missing 'is_company' query parameter"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # Convert is_company to boolean (assuming 'true'/'false' as strings)
+        print(f"is_company befor: {is_company}")
+        # Convert is_company to boolean
         is_company = is_company.lower()
+        print(f"is_company after: {is_company}")
 
         try:
             if is_company == 'true':
-                # Validate nationalID is provided
-                if not national_id:
+                print(f"is_company is True")
+                # Validate nationalID is provided and not empty
+                if not national_id or not national_id.strip():
                     return Response(
-                        {"error": "Missing 'nationalID' query parameter"},
+                        {"error": "Missing or invalid 'nationalID' query parameter"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 # Get company by nationalID (single object)
-                company = Company.objects.get(nationalID=national_id)
-                # Filter questionnaires for this company
-                questionnaires = Questionnaire.objects.filter(company=company)
-            else:
-                # Validate username is provided
-                if not username:
+                try:
+                    company = Company.objects.get(nationalID=national_id.strip())
+                    # Filter questionnaires for this company
+                    questionnaires = Questionnaire.objects.filter(company=company)
+                except Company.DoesNotExist:
                     return Response(
-                        {"error": "Missing 'username' query parameter"},
+                        {"error": f"No company found with nationalID: {national_id}"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                print(f"is_company is False")
+                # Validate username is provided and not empty
+                if not username or not username.strip():
+                    return Response(
+                        {"error": "Missing or invalid 'username' query parameter"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+                print("we have username")
                 # Get companies by username (queryset)
-                companies = Company.objects.filter(username=username)
+                companies = Company.objects.filter(user__username=username.strip())
+                print(f"we have {len(companies)} companies")
+                if not companies.exists():
+                    return Response(
+                        {"error": f"No companies found for username: {username}"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
                 # Aggregate questionnaires for all matching companies
                 questionnaires = Questionnaire.objects.filter(company__in=companies)
-
+                print(f"we have {len(questionnaires)} questionnaires")
             # Serialize the questionnaires
             serializer = QuestionnaireSerializer(questionnaires, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        except ObjectDoesNotExist:
-            return Response(
-                {"error": "No matching company found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
         except Exception as e:
             return Response(
-                {"error": f"An error occurred: {str(e)}"},
+                {"error": f"An unexpected error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
