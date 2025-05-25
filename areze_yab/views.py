@@ -11,7 +11,7 @@ from areze_yab.serializers import *
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 from celery.result import AsyncResult
-from .tasks import report as report_task
+from .tasks import report as report_task, openEnded
 from areze_yab.models import *
 
 
@@ -129,9 +129,7 @@ class CompanyAPIView(APIView):
         name = company_data['name']
         registrationNumber = company_data['registrationNumber']
         nationalID = company_data['nationalID']
-        size = company_data['size'],
         company_domain = company_data['company_domain']
-        print(f"size: {size}")
         print(f"nationalID: {nationalID}")
         print(f"registrationNumber: {registrationNumber}")
         if not userid:
@@ -139,7 +137,7 @@ class CompanyAPIView(APIView):
         if not company_data:
             return Response(data={"error": "Company is required"}, status=status.HTTP_400_BAD_REQUEST)
         user = CustomUser.objects.get(id=userid)
-        if not size:
+        if not company_data['size']:
             return Response(data={'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not registrationNumber:
             return Response(data={'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
@@ -157,7 +155,7 @@ class CompanyAPIView(APIView):
                     name=name,
                     registrationNumber=registrationNumber,
                     nationalID=nationalID,
-                    size=size
+                    size = company_data['size']
                 )
                 print(f'company: {company}')
                 print(f'size of company: {company.size}')
@@ -259,9 +257,9 @@ class SubmitAnswerView(APIView):
         ).order_by('id').first()
 
         if not next_question:
-            questionnaire.is_completed = True
-            questionnaire.save()
-            return Response({"message": "Questionnaire completed"}, status=status.HTTP_200_OK)
+            # questionnaire.is_completed = True
+            # questionnaire.save()
+            return Response({"message": "Questionnaire completed"}, status=status.HTTP_202_ACCEPTED)
 
         return Response(data={'question': QuestionSerializer(next_question).data}, status=status.HTTP_200_OK)
 
@@ -414,7 +412,7 @@ logger = logging.getLogger(__name__)
 class StartReportView(APIView):
     def post(self, request):
         questionnaire_id = request.data.get('questionnaire_id')
-        national_id = request.data.get('national_id')
+        national_id = request.data.get('nationaID')
         if not national_id:
             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not questionnaire_id:
@@ -432,7 +430,12 @@ class StartReportView(APIView):
         print("object created")
 
         # اجرای تسک celery
-        report_task.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
+        if questionnaire.domain.name != 'تحلیل صورت های مالی':
+            print('its molti type domain')
+            report_task.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
+        else:
+            print(" its open ended domain")
+            openEnded.delay(report_id=report.id, national_id=national_id)
         print("task started")
 
         return Response({'report_id': report.id, 'status': 'pending'}, status=status.HTTP_202_ACCEPTED)
@@ -443,16 +446,17 @@ class GetReportAPIView(APIView):
         report = get_object_or_404(Report, id=report_id)
 
         # اگر گزارش هنوز آماده نشده بود
-        if report.status != 'done':
-            return Response({
-                'status': report.status,
-                'message': 'گزارش هنوز کامل نشده است. لطفاً بعداً دوباره امتحان کنید.'
-            }, status=status.HTTP_202_ACCEPTED)
         if report.status == 'error':
             return Response({
                 'status': report.status,
                 'message': report.result,
-            })
+            },status.HTTP_404_NOT_FOUND)
+        if report.status != 'done':
+            return Response({
+                'status': report.status,
+                'message': 'گزارش هنوز کامل نشده است. لطفاً بعداً دوباره امتحان کنید.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
         # اگر گزارش آماده بود
         return Response({
             'status': report.status,
@@ -533,4 +537,5 @@ class QuestionnaireStatusView(APIView):
         nationalID = request.query_params.get('nationalID')
         company = Company.objects.get(nationalID=nationalID)
         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
+
         return Response(QuestionnaireStatusSerializer(questionnaire).data, status=status.HTTP_200_OK)

@@ -153,5 +153,5 @@ class Report(models.Model):
         ('error', 'Error'),
     ]
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
-    result = models.TextField(null=True, blank=True)
+    result = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
