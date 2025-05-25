@@ -156,10 +156,72 @@ def report(report_id, national_id, questionnaire_id):
             "summary": "پردازش با موفقیت انجام شد",
             "score": 85
         }
+        questionnaire.report = result_data
+        questionnaire.is_completed = True
+        questionnaire.save()
         report_obj.result = result_data
         report_obj.status = 'done'
         report_obj.save()
 
     except Report.DoesNotExist:
 
+        return
+
+
+@shared_task
+def openEnded(report_id, national_id, questionnaire_id):
+    try:
+        report_obj = Report.objects.get(id=report_id)
+        report_obj.status = 'processing'
+        report_obj.save()
+
+        # شبیه‌سازی یک عملیات سنگین
+
+        # پیدا کردن شرکت
+        try:
+            company = Company.objects.get(nationalID=national_id)
+        except ObjectDoesNotExist:
+            report_obj.status = 'error'
+            report_obj.result = {'error': 'Company with this nationalID does not exist'}
+            report_obj.save()
+
+            # پیدا کردن پرسشنامه
+        questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
+        answers = questionnaire.answers.all()
+
+        if not answers:
+            report_obj.status = 'error'
+            report_obj.result = {"error": "No answers provided"}
+            report_obj.save()
+
+        messages = []
+        # محاسبه میانگین کلی برای پاسخ‌های چهارگزینه‌ای
+        mc_answers = answers.filter(question__question_type=QuestionType.OPEN_ENDED)
+        for answer in mc_answers:
+            messages.append(f"{answer.question.text}: {answer.text_answer}")
+
+        prompt = f'''
+        تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی. اطلاعات مالی به واحد ریال و به شرح زیر است:
+{'\n'.join(messages)}
+با توجه به اطلاعات مالی ، یک تحلیل عملکرد کلی حوزه مالی شرکت بر اساس مدل دوپونت ارائه. فرمت این گزارش باید به شکل زیر باشد:
+برای تحلیل عملکرد مالی بر اساس مدل دوپونت  باید راجب موضوعات زیر در 3 پاراگراف و حداقل 400 کلمه توضیح بدی:
+پاراگراف اول: (معرفی مدل دو پونت و توضیح راجب نسبت های آن)
+پاراگراف دوم: (انجام محاسبات دو پونت)
+پارگراف سوم: (تحلیل عملکرد مالی شرکت بر اساس مدل دوپونت)
+*گزارش هر اندازه هم که طولانی شد اما به صورت کامل  و بدون وقفه تحلیل را ارائه بده*
+
+        
+    '''
+        rule = f'''
+        تصور کن یک کارشناس مالی هستی و قصد داری بر اساس مدل دوپونت و با توجه به اطلاعات صورت سود و زیان و ترازنامه، یک تحلیل مالی برای شرکت ارائه بدی.
+    '''
+        result_data = openAI(prompt, rule)
+        questionnaire.report = result_data
+        questionnaire.is_completed = True
+        questionnaire.save()
+        report_obj.result = result_data
+        report_obj.status = 'done'
+        report_obj.save()
+
+    except Report.DoesNotExist:
         return

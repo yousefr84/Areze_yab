@@ -71,7 +71,7 @@ class QuestionnaireStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Questionnaire
-        fields = ['id', 'is_completed', 'next_question']
+        fields = ['id', 'is_completed', 'next_question','report']
 
     def get_next_question(self, obj):
         unanswered = obj.answers.order_by('question__id').last()

@@ -41,3 +41,8 @@ class SubDomainAdmin(admin.ModelAdmin):
 @admin.register(Domain)
 class DomainAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
+
+
+@admin.register(Report)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status')
