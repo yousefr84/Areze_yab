@@ -1,18 +1,105 @@
-import openai
-from asgiref.sync import sync_to_async, async_to_sync
+from django.conf import settings
 from django.db import IntegrityError
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext as _
-from openai import AsyncOpenAI
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from areze_yab.serializers import *
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 import logging
-from celery.result import AsyncResult
-from .tasks import report as report_task, openEnded
+from .tasks import report as report_task, openEnded, newDomain
 from areze_yab.models import *
+import requests
+import json
+
+
+class PaymentAPIView(APIView):
+    sandbox = 'www'
+    MERCHANT = settings.MERCHANT  # باید تو settings.py تعریف شده باشه
+    ZP_API_REQUEST = f"https://{sandbox}.zarinpal.com/pg/rest/WebGate/PaymentRequest.json"
+    ZP_API_VERIFY = f"https://{sandbox}.zarinpal.com/pg/rest/WebGate/PaymentVerification.json"
+    ZP_API_STARTPAY = f"https://{sandbox}.zarinpal.com/pg/StartPay/"
+    CallbackURL = 'http://91.107.185.130:8080/api/payment/verify/'  # اصلاح شده برای مطابقت با URL
+
+    def post(self, request):
+        try:
+            payment = Payment.objects.get(id=1)
+            amount = int(PaymentSerializer(payment).data['price'])  # فرض می‌کنیم فیلد price تو سریالایزر وجود داره
+            print(f'Payment amount {amount} with type {type(amount)}')
+        except Payment.DoesNotExist:
+            return Response({'status': False, 'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+        except KeyError:
+            return Response({'status': False, 'error': 'Invalid payment data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"
+        phone = '09120478082'
+
+        data = {
+            "MerchantID": self.MERCHANT,
+            "Amount": amount,
+            "Description": description,
+            "Phone": phone,
+            "CallbackURL": self.CallbackURL,
+        }
+        data = json.dumps(data)
+        headers = {'content-type': 'application/json', 'content-length': str(len(data))}
+
+        try:
+            response = requests.post(self.ZP_API_REQUEST, data=data, headers=headers, timeout=10)
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data['Status'] == 100:
+                    return Response({
+                        'status': True,
+                        'url': self.ZP_API_STARTPAY + str(response_data['Authority']),
+                        'authority': response_data['Authority']
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return Response({'status': False, 'code': str(response_data['Status'])},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': False, 'code': str(response.status_code)}, status=status.HTTP_400_BAD_REQUEST)
+
+        except requests.exceptions.Timeout:
+            return Response({'status': False, 'code': 'timeout'}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        except requests.exceptions.ConnectionError:
+            return Response({'status': False, 'code': 'connection error'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    def get(self, request):
+        authority = request.GET.get('Authority')
+        status_param = request.GET.get('Status')
+
+        if not authority or status_param != 'OK':
+            return Response({'status': False, 'error': 'Invalid payment attempt'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            payment = Payment.objects.get(id=1)
+            amount = PaymentSerializer(payment).data['price']
+        except Payment.DoesNotExist:
+            return Response({'status': False, 'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+        except KeyError:
+            return Response({'status': False, 'error': 'Invalid payment data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            "MerchantID": self.MERCHANT,
+            "Amount": amount,
+            "Authority": authority,
+        }
+        data = json.dumps(data)
+        headers = {'content-type': 'application/json', 'content-length': str(len(data))}
+
+        try:
+            response = requests.post(self.ZP_API_VERIFY, data=data, headers=headers)
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data['Status'] == 100:
+                    return HttpResponseRedirect('https://' + authority + '/' + response_data['Authority'])
+                else:
+                    return Response({'status': False, 'code': str(response_data['Status'])},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': False, 'code': str(response.status_code)}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException:
+            return Response({'status': False, 'code': 'request error'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class RegisterAPIView(APIView):
@@ -66,19 +153,16 @@ class RegisterAPIView(APIView):
         if is_company == 'true':
             try:
                 company_domain = data.get('company_domain')
-                registration_number = data.get('registrationNumber')
                 size = data.get('size')
                 national_id = username  # استفاده از username به‌عنوان nationalID
                 if not company_domain:
                     return Response({'error': 'company_domain is missing'}, status=status.HTTP_400_BAD_REQUEST)
-                if not registration_number:
-                    return Response({'error': 'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
                 if not size:
                     return Response({'error': 'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
                 company = Company.objects.create(
                     company_domain=company_domain,
                     name=name,
-                    registrationNumber=registration_number,
                     nationalID=national_id,
                     size=size
                 )
@@ -121,17 +205,53 @@ class RegisterAPIView(APIView):
 
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
+    def put(self, request):
+        user_id = request.data.get('id')
+        username = request.data.get('username')
+        name = request.data.get('name')
+
+        if not user_id:
+            return Response(data={"error": "User ID missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response(data={"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_company:
+            try:
+                national_id = username
+                size = str(request.data.get('size'))
+                company_domain = str(request.data.get('company_domain'))
+                company = Company.objects.get(user=user)
+                serializer = CompanySerializer(company, data={'name': name, 'national_id': national_id,
+                                                              'size': size,
+                                                              'company_domain': company_domain}, partial=True)
+                if serializer.is_valid():
+                    print('serializer validated1')
+                    serializer.save()
+                else:
+                    return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Company.DoesNotExist:
+                return Response(data={"error": "Company not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(user, data={'username': username, 'name': name}, partial=True)
+
+        if serializer.is_valid():
+            print('serializer validated2')
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CompanyAPIView(APIView):
     def post(self, request):
         userid = request.data['userid']
         company_data = request.data['company']
         name = company_data['name']
-        registrationNumber = company_data['registrationNumber']
         nationalID = company_data['nationalID']
         company_domain = company_data['company_domain']
         print(f"nationalID: {nationalID}")
-        print(f"registrationNumber: {registrationNumber}")
         if not userid:
             return Response(data={'user id missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not company_data:
@@ -139,8 +259,7 @@ class CompanyAPIView(APIView):
         user = CustomUser.objects.get(id=userid)
         if not company_data['size']:
             return Response(data={'size is missing'}, status=status.HTTP_400_BAD_REQUEST)
-        if not registrationNumber:
-            return Response(data={'registrationNumber is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not nationalID:
             return Response(data={'nationalID is missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not company_domain:
@@ -153,9 +272,8 @@ class CompanyAPIView(APIView):
                 company = Company.objects.create(
                     company_domain=company_domain,
                     name=name,
-                    registrationNumber=registrationNumber,
                     nationalID=nationalID,
-                    size = company_data['size']
+                    size=company_data['size']
                 )
                 print(f'company: {company}')
                 print(f'size of company: {company.size}')
@@ -166,6 +284,15 @@ class CompanyAPIView(APIView):
                 print(f'size of company: {company.size}')
             serializer = CompanySerializer(company)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        nationalID = request.query_params.get('nationalID')
+        try:
+            company = Company.objects.get(nationalID=nationalID)
+        except Exception as e:
+            return Response(data={'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CompanySerializer(company)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class DomainsAPIView(APIView):
@@ -226,30 +353,36 @@ class SubmitAnswerView(APIView):
             return Response(data={'error': 'An answer for this question already exists'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        # مدیریت نوع سوال
+        option = None
+        text_answer = None
         if question.question_type == QuestionType.MULTIPLE_CHOICE:
             option_name = request.data.get('option')
             if not option_name:
                 return Response(data={'error': 'option missing for multiple choice question'},
                                 status=status.HTTP_400_BAD_REQUEST)
             option = get_object_or_404(Option, name=option_name, question=question)
-            text_answer = None
-        else:
+        else:  # OPEN_ENDED
             text_answer = request.data.get('text_answer')
             if not text_answer:
                 return Response(data={'error': 'text_answer missing for open-ended question'},
                                 status=status.HTTP_400_BAD_REQUEST)
-            option = None
 
         try:
-            Answer.objects.create(
+            answer = Answer(
                 questionnaire=questionnaire,
                 question=question,
                 option=option,
-                text_answer=text_answer
+                text_answer=text_answer  # استفاده از text_answer به جای txt_answer
             )
+            answer.save()  # اعتبارسنجی در متد save مدل انجام می‌شود
+        except ValidationError as e:
+            return Response(data={'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response(data={'error': 'Failed to save answer'}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Error saving answer: {str(e)}")  # لاگ برای دیباگ
+            return Response(data={'error': f'Failed to save answer: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # بررسی سوال بعدی
         next_question = Question.objects.filter(
             subdomain__domain=questionnaire.domain,
             size=company.size,
@@ -257,8 +390,8 @@ class SubmitAnswerView(APIView):
         ).order_by('id').first()
 
         if not next_question:
-            # questionnaire.is_completed = True
-            # questionnaire.save()
+            questionnaire.is_completed = True
+            questionnaire.save()
             return Response({"message": "Questionnaire completed"}, status=status.HTTP_202_ACCEPTED)
 
         return Response(data={'question': QuestionSerializer(next_question).data}, status=status.HTTP_200_OK)
@@ -412,7 +545,7 @@ logger = logging.getLogger(__name__)
 class StartReportView(APIView):
     def post(self, request):
         questionnaire_id = request.data.get('questionnaire_id')
-        national_id = request.data.get('nationaID')
+        national_id = request.data.get('nationalID')
         if not national_id:
             return Response(data={'error': 'nationalID missing'}, status=status.HTTP_400_BAD_REQUEST)
         if not questionnaire_id:
@@ -430,12 +563,16 @@ class StartReportView(APIView):
         print("object created")
 
         # اجرای تسک celery
-        if questionnaire.domain.name != 'تحلیل صورت های مالی':
-            print('its molti type domain')
-            report_task.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
+        if questionnaire.domain.name == 'بررسی اعتبار مالی شرکت':
+            print('its new type domain')
+            newDomain.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
+        elif questionnaire.domain.name != 'تحلیل صورت های مالی':
+            print("its open ended domain")
+            openEnded.delay(report_id=report.id, national_id=national_id,
+                            questionnaire_id=questionnaire_id)  # اصلاح پارامترها
         else:
-            print(" its open ended domain")
-            openEnded.delay(report_id=report.id, national_id=national_id)
+            print('its multi type domain')
+            report_task.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
         print("task started")
 
         return Response({'report_id': report.id, 'status': 'pending'}, status=status.HTTP_202_ACCEPTED)
@@ -450,7 +587,7 @@ class GetReportAPIView(APIView):
             return Response({
                 'status': report.status,
                 'message': report.result,
-            },status.HTTP_404_NOT_FOUND)
+            }, status.HTTP_404_NOT_FOUND)
         if report.status != 'done':
             return Response({
                 'status': report.status,
@@ -467,60 +604,31 @@ class GetReportAPIView(APIView):
 class QuestionnairesView(APIView):
     def get(self, request):
         # Extract query parameters
-        is_company = request.query_params.get('is_company')
-        national_id = request.query_params.get('nationalID')
         username = request.query_params.get('username')
 
         # Validate required query parameters
-        if is_company is None:
-            return Response(
-                {"error": "Missing 'is_company' query parameter"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        print(f"is_company befor: {is_company}")
-        # Convert is_company to boolean
-        is_company = is_company.lower()
-        print(f"is_company after: {is_company}")
 
         try:
-            if is_company == 'true':
-                print(f"is_company is True")
-                # Validate nationalID is provided and not empty
-                if not national_id or not national_id.strip():
-                    return Response(
-                        {"error": "Missing or invalid 'nationalID' query parameter"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                # Get company by nationalID (single object)
-                try:
-                    company = Company.objects.get(nationalID=national_id.strip())
-                    # Filter questionnaires for this company
-                    questionnaires = Questionnaire.objects.filter(company=company)
-                except Company.DoesNotExist:
-                    return Response(
-                        {"error": f"No company found with nationalID: {national_id}"},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-            else:
-                print(f"is_company is False")
-                # Validate username is provided and not empty
-                if not username or not username.strip():
-                    return Response(
-                        {"error": "Missing or invalid 'username' query parameter"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                print("we have username")
-                # Get companies by username (queryset)
-                companies = Company.objects.filter(user__username=username.strip())
-                print(f"we have {len(companies)} companies")
-                if not companies.exists():
-                    return Response(
-                        {"error": f"No companies found for username: {username}"},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-                # Aggregate questionnaires for all matching companies
-                questionnaires = Questionnaire.objects.filter(company__in=companies)
-                print(f"we have {len(questionnaires)} questionnaires")
+
+            print(f"is_company is False")
+            # Validate username is provided and not empty
+            if not username or not username.strip():
+                return Response(
+                    {"error": "Missing or invalid 'username' query parameter"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            print("we have username")
+            # Get companies by username (queryset)
+            companies = Company.objects.filter(user__username=username.strip())
+            print(f"we have {len(companies)} companies")
+            if not companies.exists():
+                return Response(
+                    {"error": f"No companies found for username: {username}"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            # Aggregate questionnaires for all matching companies
+            questionnaires = Questionnaire.objects.filter(company__in=companies)
+            print(f"we have {len(questionnaires)} questionnaires")
             # Serialize the questionnaires
             serializer = QuestionnaireSerializer(questionnaires, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -534,8 +642,10 @@ class QuestionnairesView(APIView):
 
 class QuestionnaireStatusView(APIView):
     def get(self, request, questionnaire_id):
-        nationalID = request.query_params.get('nationalID')
-        company = Company.objects.get(nationalID=nationalID)
-        questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id, company=company)
-
-        return Response(QuestionnaireStatusSerializer(questionnaire).data, status=status.HTTP_200_OK)
+        questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id)
+        serializer = QuestionnaireSerializer(questionnaire)
+        try:
+            report_id = Report.objects.get(questionnaire=questionnaire).id
+        except Report.DoesNotExist:
+            report_id = None
+        return Response(data={"status": serializer.data, "report_id": report_id}, status=status.HTTP_200_OK)
