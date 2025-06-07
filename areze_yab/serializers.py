@@ -13,16 +13,39 @@ class UserSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             password=validated_data['password'],
             is_company=validated_data.get('is_company', False),
-            name=validated_data.get('name'),
-            registrationNumber=validated_data.get('registrationNumber')
+            name=validated_data.get('name')
         )
         return user
+
+    def update(self, instance, validated_data):
+        # به‌روزرسانی فیلدها
+        instance.username = validated_data.get('username', instance.username)
+        instance.is_company = validated_data.get('is_company', instance.is_company)
+        instance.name = validated_data.get('name', instance.name)
+
+        # مدیریت رمز عبور
+        password = validated_data.get('password')
+        if password:
+            instance.set_password(password)  # رمز عبور را به صورت ایمن به‌روزرسانی می‌کند
+
+        instance.save()
+        return instance
 
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"
+    def update(self, instance, validated_data):
+        # به‌روزرسانی فیلدها
+        instance.is_company = validated_data.get('is_company', instance.is_company)
+        instance.name = validated_data.get('name', instance.name)
+        instance.nationalID = validated_data.get('nationalID', instance.nationalID)
+        instance.size = validated_data.get('size', instance.size)
+        instance.company_domain = validated_data.get('company_domain', instance.company_domain)
+
+        instance.save()
+        return instance
 
 
 class OptionSerializer(serializers.ModelSerializer):
@@ -71,7 +94,7 @@ class QuestionnaireStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Questionnaire
-        fields = ['id', 'is_completed', 'next_question','report']
+        fields = ['id', 'is_completed', 'next_question','is_paid','domain']
 
     def get_next_question(self, obj):
         unanswered = obj.answers.order_by('question__id').last()
@@ -98,3 +121,8 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
         fields = ['id', 'company', 'domain', 'created_at', 'is_completed']
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ["price"]

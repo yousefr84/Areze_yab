@@ -4,14 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="celery and dibug">
+    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Areza_Yabi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Areza_Yabi/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/tasks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" />
     </list>
@@ -62,7 +63,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;db83a380&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;965d857f&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/yousef/Downloads/Telegram Desktop/Areze_yab&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -171,6 +172,30 @@
       <workItem from="1747803591069" duration="3071000" />
       <workItem from="1748149041137" duration="4041000" />
       <workItem from="1748155124094" duration="751000" />
+      <workItem from="1748157593985" duration="10069000" />
+      <workItem from="1748235243412" duration="8513000" />
+      <workItem from="1748250056792" duration="5491000" />
+      <workItem from="1748283836901" duration="108000" />
+      <workItem from="1748325451167" duration="636000" />
+      <workItem from="1748367511600" duration="1606000" />
+      <workItem from="1748495378041" duration="5000" />
+      <workItem from="1748497340841" duration="925000" />
+      <workItem from="1748498571807" duration="10383000" />
+      <workItem from="1748583679884" duration="270000" />
+      <workItem from="1748585782523" duration="638000" />
+      <workItem from="1748619114272" duration="898000" />
+      <workItem from="1748620418167" duration="1395000" />
+      <workItem from="1748669179273" duration="8905000" />
+      <workItem from="1748680702019" duration="1070000" />
+      <workItem from="1748682121467" duration="1347000" />
+      <workItem from="1748767990851" duration="3185000" />
+      <workItem from="1748850511905" duration="61000" />
+      <workItem from="1748851540159" duration="243000" />
+      <workItem from="1748851820696" duration="7510000" />
+      <workItem from="1748861475843" duration="1657000" />
+      <workItem from="1748928667444" duration="7000" />
+      <workItem from="1748963086873" duration="1167000" />
+      <workItem from="1749271631127" duration="8242000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -308,7 +333,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747644764696</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="dibug">
+      <option name="closed" value="true" />
+      <created>1748167122285</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1748167122285</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -336,8 +369,8 @@
     <MESSAGE value="sum dibuging" />
     <MESSAGE value="rewrite and debug" />
     <MESSAGE value="add sum feature" />
-    <MESSAGE value="dibug" />
     <MESSAGE value="celery and dibug" />
-    <option name="LAST_COMMIT_MESSAGE" value="celery and dibug" />
+    <MESSAGE value="dibug" />
+    <option name="LAST_COMMIT_MESSAGE" value="dibug" />
   </component>
 </project>

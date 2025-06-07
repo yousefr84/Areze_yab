@@ -5,6 +5,12 @@ from django.db.models import CharField
 
 
 # Create your models here.
+class Payment(models.Model):
+    price = models.IntegerField()
+
+
+    def __str__(self):
+        return self.price
 
 
 class Size(models.TextChoices):
@@ -45,7 +51,6 @@ class CustomUser(AbstractUser):
 class Company(models.Model):
     user = models.ManyToManyField(CustomUser)
     name = models.CharField(max_length=100)
-    registrationNumber = models.CharField(max_length=100, unique=True)
     nationalID = models.CharField(max_length=100, unique=True)
     size = models.CharField(max_length=10, choices=Size.choices)
     company_domain = models.CharField(max_length=100)
@@ -109,6 +114,7 @@ class Questionnaire(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     report = models.JSONField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Questionnaire {self.id} for {self.company.name} in {self.domain}"
@@ -117,7 +123,7 @@ class Questionnaire(models.Model):
 class Answer(models.Model):
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    option = models.ForeignKey(Option, on_delete=models.CASCADE)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE, blank=True, null=True)
     answered_at = models.DateTimeField(auto_now_add=True)
     text_answer = models.TextField(null=True, blank=True)
 
@@ -145,7 +151,7 @@ class Answer(models.Model):
 
 
 class Report(models.Model):
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='reports')
+    questionnaire = models.OneToOneField(Questionnaire, on_delete=models.CASCADE, related_name='reports')
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('processing', 'Processing'),

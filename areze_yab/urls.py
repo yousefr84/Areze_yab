@@ -24,6 +24,7 @@ urlpatterns = [
     path('questionnaire/<int:questionnaire_id>/status/', QuestionnaireStatusView.as_view(), name='status'),
     path('questionnaires/', QuestionnairesView.as_view(), name='questionnaires'),
     path('domain/',DomainsAPIView.as_view(), name='domain'),
-    # path('request/', send_request, name='request'),
-    # path('verify/', verify, name='verify'),
+
+    path('request/', PaymentAPIView.as_view(), name='payment_start'),
+    path('payment/verify/', PaymentAPIView.as_view(), name='payment_verify'),
     ]

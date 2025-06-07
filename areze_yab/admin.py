@@ -11,7 +11,6 @@ class CompanyAdmin(admin.ModelAdmin):
 
 
 
-
 class CompanyInline(admin.TabularInline):
     model = Company.user.through  # برای مدیریت رابطه چند‌به‌چند
     extra = 1
@@ -23,7 +22,7 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Questionnaire)
 class QuestionnaireAdmin(admin.ModelAdmin):
-    list_display = ('id', 'company')
+    list_display = ('id', 'company','domain')
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
@@ -31,13 +30,13 @@ class AnswerAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('name','id', 'subdomain_id')
+    list_display = ('name','id', 'subdomain_id','subdomain')
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
     list_display = ('name','id', 'question_id')
 @admin.register(SubDomain)
 class SubDomainAdmin(admin.ModelAdmin):
-    list_display = ('id', 'domain_id')
+    list_display = ('id', 'domain_id','name')
 @admin.register(Domain)
 class DomainAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -46,3 +45,9 @@ class DomainAdmin(admin.ModelAdmin):
 @admin.register(Report)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('id', 'status')
+
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'price')
