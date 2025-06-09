@@ -566,7 +566,7 @@ class StartReportView(APIView):
         if questionnaire.domain.name == 'بررسی اعتبار مالی شرکت':
             print('its new type domain')
             newDomain.delay(report_id=report.id, national_id=national_id, questionnaire_id=questionnaire_id)
-        elif questionnaire.domain.name != 'تحلیل صورت های مالی':
+        elif questionnaire.domain.name == 'تحلیل صورت های مالی':
             print("its open ended domain")
             openEnded.delay(report_id=report.id, national_id=national_id,
                             questionnaire_id=questionnaire_id)  # اصلاح پارامترها
@@ -643,7 +643,7 @@ class QuestionnairesView(APIView):
 class QuestionnaireStatusView(APIView):
     def get(self, request, questionnaire_id):
         questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id)
-        serializer = QuestionnaireSerializer(questionnaire)
+        serializer = QuestionnaireStatusSerializer(questionnaire)
         try:
             report_id = Report.objects.get(questionnaire=questionnaire).id
         except Report.DoesNotExist:

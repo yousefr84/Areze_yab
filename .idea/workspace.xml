@@ -4,17 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="dibug">
+    <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="do some changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Areza_Yabi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Areza_Yabi/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Areza_Yabi/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/tasks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +58,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;965d857f&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;2a18ce9f&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/yousef/Downloads/Telegram Desktop/Areze_yab&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -196,6 +191,13 @@
       <workItem from="1748928667444" duration="7000" />
       <workItem from="1748963086873" duration="1167000" />
       <workItem from="1749271631127" duration="8242000" />
+      <workItem from="1749281164333" duration="649000" />
+      <workItem from="1749282349611" duration="32000" />
+      <workItem from="1749282612423" duration="49000" />
+      <workItem from="1749282798463" duration="1028000" />
+      <workItem from="1749290429619" duration="1908000" />
+      <workItem from="1749359127779" duration="5549000" />
+      <workItem from="1749398910405" duration="1302000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
@@ -341,7 +343,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748167122285</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="do some changes">
+      <option name="closed" value="true" />
+      <created>1749281192653</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1749281192653</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -371,6 +381,7 @@
     <MESSAGE value="add sum feature" />
     <MESSAGE value="celery and dibug" />
     <MESSAGE value="dibug" />
-    <option name="LAST_COMMIT_MESSAGE" value="dibug" />
+    <MESSAGE value="do some changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="do some changes" />
   </component>
 </project>
