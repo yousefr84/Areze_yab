@@ -161,3 +161,9 @@ class Report(models.Model):
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
     result = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+class Discount(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    percent = models.IntegerField()
+
+    def __str__(self):
+        return self.code

@@ -14,6 +14,23 @@ import requests
 import json
 
 
+class PayCheckAPIView(APIView):
+    def get(self, request):
+        payment = Payment.objects.get(id=0)
+        price = PaymentSerializer(payment).data['price']
+        return Response({"price": price })
+
+    def post(self, request):
+        input = request.data['discount_code']
+        payment = Payment.objects.get(id=1)
+        amount = int(PaymentSerializer(payment).data['price'])
+        try:
+            discount_code = Discount.objects.get(code=input)
+            discount = DiscountSerializer(discount_code).data['percent']
+            amount = amount - (discount / 100) * amount
+            return Response({'price': amount},status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response(data={'error':"کد تخفیف اشتباه است"},status=status.HTTP_404_NOT_FOUND)
 class PaymentAPIView(APIView):
     sandbox = 'www'
     MERCHANT = settings.MERCHANT  # باید تو settings.py تعریف شده باشه
@@ -23,14 +40,7 @@ class PaymentAPIView(APIView):
     CallbackURL = 'http://91.107.185.130:8080/api/payment/verify/'  # اصلاح شده برای مطابقت با URL
 
     def post(self, request):
-        try:
-            payment = Payment.objects.get(id=1)
-            amount = int(PaymentSerializer(payment).data['price'])  # فرض می‌کنیم فیلد price تو سریالایزر وجود داره
-            print(f'Payment amount {amount} with type {type(amount)}')
-        except Payment.DoesNotExist:
-            return Response({'status': False, 'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
-        except KeyError:
-            return Response({'status': False, 'error': 'Invalid payment data'}, status=status.HTTP_400_BAD_REQUEST)
+        amount = request.data['price']  # فرض می‌کنیم فیلد price تو سریالایزر وجود داره
 
         description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"
         phone = '09120478082'

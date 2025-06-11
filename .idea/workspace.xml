@@ -6,10 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="d3096407-9489-40f4-8d01-8ec7d8a646ff" name="Changes" comment="do some changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/areze_yab/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/areze_yab/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/areze_yab/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +61,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;2a18ce9f&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;6c49de1d&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/yousef/Downloads/Telegram Desktop/Areze_yab&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -198,6 +201,12 @@
       <workItem from="1749290429619" duration="1908000" />
       <workItem from="1749359127779" duration="5549000" />
       <workItem from="1749398910405" duration="1302000" />
+      <workItem from="1749464397186" duration="3316000" />
+      <workItem from="1749491957826" duration="614000" />
+      <workItem from="1749492694289" duration="128000" />
+      <workItem from="1749531807637" duration="1705000" />
+      <workItem from="1749547384411" duration="2727000" />
+      <workItem from="1749617157796" duration="707000" />
     </task>
     <task id="LOCAL-00001" summary="Branding model without testing">
       <option name="closed" value="true" />
