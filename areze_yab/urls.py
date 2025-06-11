@@ -6,11 +6,6 @@ from rest_framework_simplejwt.views import (
 from areze_yab.views import *
 from rest_framework.routers import DefaultRouter
 
-
-
-
-
-
 urlpatterns = [
     path('company/', CompanyAPIView.as_view(), name='company'),
 
@@ -23,8 +18,8 @@ urlpatterns = [
     path('questionnaire/<int:report_id>/result/', GetReportAPIView.as_view(), name='get-report'),
     path('questionnaire/<int:questionnaire_id>/status/', QuestionnaireStatusView.as_view(), name='status'),
     path('questionnaires/', QuestionnairesView.as_view(), name='questionnaires'),
-    path('domain/',DomainsAPIView.as_view(), name='domain'),
-
+    path('domain/', DomainsAPIView.as_view(), name='domain'),
+    path('discount/', PayCheckAPIView.as_view(), name='discount'),
     path('request/', PaymentAPIView.as_view(), name='payment_start'),
     path('payment/verify/', PaymentAPIView.as_view(), name='payment_verify'),
-    ]
+]
