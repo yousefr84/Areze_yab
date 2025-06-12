@@ -131,4 +131,4 @@ class PaymentSerializer(serializers.ModelSerializer):
 class DiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discount
-        fields = ['percent']
+        fields = ['percent','usage']

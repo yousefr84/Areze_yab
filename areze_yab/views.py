@@ -16,7 +16,7 @@ import json
 
 class PayCheckAPIView(APIView):
     def get(self, request):
-        payment = Payment.objects.get(id=0)
+        payment = Payment.objects.get(id=1)
         price = PaymentSerializer(payment).data['price']
         return Response({"price": price })
 
@@ -26,8 +26,13 @@ class PayCheckAPIView(APIView):
         amount = int(PaymentSerializer(payment).data['price'])
         try:
             discount_code = Discount.objects.get(code=input)
-            discount = DiscountSerializer(discount_code).data['percent']
+            data = DiscountSerializer(discount_code).data
+            if data['usage'] == 0:
+                return Response({"error":"اعتبار این کد تخفیف به پایان رسیده"},status=status.HTTP_400_BAD_REQUEST)
+            discount = data['percent']
             amount = amount - (discount / 100) * amount
+            discount_code.usage -= 1
+            discount_code.save()
             return Response({'price': amount},status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response(data={'error':"کد تخفیف اشتباه است"},status=status.HTTP_404_NOT_FOUND)
@@ -602,7 +607,7 @@ class GetReportAPIView(APIView):
             return Response({
                 'status': report.status,
                 'message': 'گزارش هنوز کامل نشده است. لطفاً بعداً دوباره امتحان کنید.'
-            }, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_202_ACCEPTED)
 
         # اگر گزارش آماده بود
         return Response({
