@@ -164,6 +164,7 @@ class Report(models.Model):
 class Discount(models.Model):
     code = models.CharField(max_length=10, unique=True)
     percent = models.IntegerField()
+    usage = models.PositiveSmallIntegerField(default=2)
 
     def __str__(self):
         return self.code
